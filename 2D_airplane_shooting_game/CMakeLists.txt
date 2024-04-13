@@ -1,0 +1,39 @@
+cmake_minimum_required(VERSION 3.1.0)
+
+project(game VERSION 1.0.0.1)
+set(Version 1.0.0.1)
+include(InstallRequiredSystemLibraries)
+add_definitions("-DUNICODE" "-D_UNICODE" "-DWIN32_LEAN_AND_MEAN")
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+if(CMAKE_VERSION VERSION_LESS "3.7.0")
+    set(CMAKE_INCLUDE_CURRENT_DIR ON)
+endif()
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+include_directories(${CMAKE_SOURCE_DIR}/glad/include)
+include_directories($ENV{GLFW_PATH}/include)
+include_directories($ENV{STD_IMAGE_PATH}/include)
+include_directories($ENV{GLM_PATH})
+
+link_directories($ENV{GLFW_PATH}/lib)
+
+message("CMAKE_TOOLCHAIN_FILE = " ${CMAKE_TOOLCHAIN_FILE})
+
+set(game_SOURCES 
+	${CMAKE_SOURCE_DIR}/glad/src/glad.c
+    src/main.cpp
+)
+add_executable(${PROJECT_NAME}
+		${game_SOURCES}
+)
+target_link_libraries(${PROJECT_NAME}  glfw3 opengl32)
+
+
+

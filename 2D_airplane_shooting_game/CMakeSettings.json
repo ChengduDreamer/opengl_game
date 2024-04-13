@@ -1,0 +1,45 @@
+﻿{
+  "environments": [
+    {
+      "GLFW_PATH": "F:/work/Lib/staticLib/vs2019/glfw3.3.8",
+      "Libyuv_PATH": "F:/work/Lib/libyuv/x86Static",
+      "STD_IMAGE_PATH": "F:/work/Lib/stb_image",
+      "GLM_PATH": "F:/work/Lib/glm-0.9.9.7/glm"
+    }
+  ],
+  "configurations": [
+    {
+      "name": "x64-Debug",
+      "generator": "Ninja",
+      "configurationType": "Debug",
+      "inheritEnvironments": [ "msvc_x64_x64" ],
+      "buildRoot": "${projectDir}\\out\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "variables": [],
+      "environments": [
+        {
+          "OPENSSL_PATH": "d:\\work\\lib\\OpenSSL-Win64"
+        }
+      ]
+    },
+    {
+      "name": "x64-Release",
+      "generator": "Ninja",
+      "configurationType": "Release",
+      "inheritEnvironments": [ "msvc_x64_x64" ],
+      "buildRoot": "${projectDir}\\out\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeCommandArgs": "-DCOPY_DEBUG_FILE=FALSE",
+      "ctestCommandArgs": "",
+      "variables": [],
+      "environments": [
+        {
+          "OPENSSL_PATH": "d:\\work\\lib\\OpenSSL-Win64"
+        }
+      ]
+    },
+  ]
+}
