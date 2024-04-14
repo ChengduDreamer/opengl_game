@@ -17,8 +17,8 @@ namespace yk {
 		shader_fs_path_ = (Setting::GetInstance()->resource_base_path_ / fs_path).string();
 		x_ = x;
 		y_ = y;
-		width_ = width_;
-		height_ = height_;
+		width_ = width;
+		height_ = height;
         sharder_program_ = std::make_shared<Shader>(shader_vs_path_.c_str(), shader_fs_path_.c_str());
 		Init();
 	}
@@ -32,17 +32,19 @@ namespace yk {
 
 	void Plane::Init() {
 		float vertices[] = {
-			// positions                          // texture coords
-			 x_ + width_,   y_,            0.0f,   1.0f, 1.0f, // top right
-			 x_ + width_,   y_ - height_,  0.0f,   1.0f, 0.0f, // bottom right
-			 x_,            y_ - height_, 0.0f,   0.0f, 0.0f, // bottom left
-			 x_,            y_,           0.0f,   0.0f, 1.0f  // top left 
+			// positions                                 // texture coords
+            0.00f + width_,  0.00f,             0.0f,   1.0f, 1.0f, // top right
+			0.00f + width_,  0.00f - height_,   0.0f,   1.0f, 0.0f, // bottom right
+			0.00f,           0.00f - height_,   0.0f,   0.0f, 0.0f, // bottom left
+            0.00f,           0.00f,             0.0f,   0.0f, 1.0f  // top left 
 		};
 		unsigned int indices[] = {
 			0, 1, 3, // first triangle
 			1, 2, 3  // second triangle
 		};
 
+        glm::vec3 position = glm::vec3(x_, y_, 0.0f);
+            
         glGenVertexArrays(1, &VAO_);
         glGenBuffers(1, &VBO_);
         glGenBuffers(1, &EBO_);
@@ -74,9 +76,10 @@ namespace yk {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
         //如果不启用以下两行代码，png图片透明的部分，就是黑色底
+#if 0
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
+#endif
         // load image, create texture and generate mipmaps
         int width, height, nrChannels;
         stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
@@ -102,46 +105,39 @@ namespace yk {
         sharder_program_->use(); // don't forget to activate/use the shader before setting uniforms!
         // either set it manually like so:
         glUniform1i(glGetUniformLocation(sharder_program_->ID, "texture0"), 0);
+
+        translation_matrix_ = glm::mat4(1.0f);
+        translation_matrix_ = glm::translate(translation_matrix_, position);
+
+        unsigned int model_loc = glGetUniformLocation(sharder_program_->ID, "model");
+        glUniformMatrix4fv(model_loc, 1, GL_FALSE, glm::value_ptr(translation_matrix_));
+        //??? 其实这里还是处于标准化设备坐标系？ 怎么理解当前的坐标模式与 后面所学的 坐标系统
 	}
 
     void Plane::Paint() {
         // bind textures on corresponding texture units
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture0_);
-
         // render container
         sharder_program_->use();
         glBindVertexArray(VAO_);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     }
 
-	void Plane::MoveX(float x) {
-        x_offset_ += x;
-        if (x > 0) {
-            if (x_offset_ >= 0.95f) {
-                x_offset_ = 0.95f;
-            }
+    void Plane::Move(float x_offset, float y_offset) {
+        glm::vec3 offset = glm::vec3(x_offset, y_offset, 0.0f);
+        GLfloat position[4] = {0.0f, };
+        //禁止越界(超越窗口)
+        glm::vec3 object_position = glm::vec3(translation_matrix_ * glm::vec4(x_offset, y_offset, 0.0f, 1.0f));
+        //std::cout << "object_position x = " << object_position.x << " object_position y = " << object_position.y << std::endl;
+        if (object_position.x < -1.0f || object_position.x > (1.0f - width_)) {
+            offset.x = 0;
         }
-        else {
-            if (x_offset_ <= -0.95f) {
-                x_offset_ = -0.95f;
-            }
+        if (object_position.y < (-1.0 + height_) || object_position.y > 1.0f) {
+            offset.y = 0;
         }
-        sharder_program_->setFloat("posXOffset", x_offset_);
-	}
-
-    void Plane::MoveY(float y) {
-        y_offset_ += y;
-        if (y > 0) {
-            if (y_offset_ >= 1.8f) {
-                y_offset_ = 1.8f;
-            }
-        }
-        else {
-            if (y_offset_ <= -0.02f) {
-                y_offset_ = -0.02f;
-            }
-        }
-        sharder_program_->setFloat("posYOffset", y_offset_);
+        translation_matrix_ = glm::translate(translation_matrix_, offset);
+        unsigned int model_loc = glGetUniformLocation(sharder_program_->ID, "model");
+        glUniformMatrix4fv(model_loc, 1, GL_FALSE, glm::value_ptr(translation_matrix_));
     }
 }

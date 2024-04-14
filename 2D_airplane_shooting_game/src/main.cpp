@@ -2,7 +2,9 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <filesystem>
+#include <thread>
 #include "setting.h"
+#include "common/time_util.h"
 #include "plane_factory.h"
 #include "learnopengl/shader_s.h"
 
@@ -13,10 +15,8 @@ void processInput(GLFWwindow* window, std::shared_ptr<yk::Plane> plane_ptr);
 const unsigned int SCR_WIDTH = 1800;
 const unsigned int SCR_HEIGHT = 1200;
 
-
 int main()
 {
-
     yk::Setting::GetInstance()->resource_base_path_ = "G:/code/yuanqi/opengl_game/2D_airplane_shooting_game/res";
 
     // glfw: initialize and configure
@@ -50,7 +50,15 @@ int main()
         return -1;
     }
 
-    std::shared_ptr<yk::Plane> plane_ptr = yk::PlaneFactory::CreatePlane("image/hero_b_1.png", "shader/hero_b_1.vs", "shader/hero_b_1.fs", -0.05f, -0.83f, 0.1f, 0.12f);
+    /*std::shared_ptr<yk::Plane> plane_ptr = yk::PlaneFactory::CreatePlane("image/hero_b_1.png", "shader/hero_b_1.vs", "shader/hero_b_1.fs", -0.05f, -0.83f, 0.1f, 0.12f);*/
+
+
+    float plane_width = 0.1f;
+    float plane_height = 0.12f;
+
+
+
+    std::shared_ptr<yk::Plane> plane_ptr = yk::PlaneFactory::CreatePlane("image/hero_b_1.png", "shader/hero_b_1.vs", "shader/hero_b_1.fs", 0.0f , 0.0f, plane_width, plane_height);
 
  
 
@@ -59,6 +67,7 @@ int main()
     // 这种模式下游戏的帧率是多少呢？？？
     while (!glfwWindowShouldClose(window))
     {
+        uint64_t before_time = yk::GetCurrentTimestamp();
         // input
         // -----
         processInput(window, plane_ptr);
@@ -74,6 +83,13 @@ int main()
         // -------------------------------------------------------------------------------
         glfwSwapBuffers(window);
         glfwPollEvents();
+
+        uint64_t after_time = yk::GetCurrentTimestamp();
+        int diff_time = after_time - before_time;
+        int per_frame_time = 1000 / yk::Setting::GetInstance()->fps_;
+        if (per_frame_time > diff_time) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(per_frame_time - diff_time));
+        }
     }
 
     // glfw: terminate, clearing all previously allocated GLFW resources.
@@ -86,24 +102,28 @@ int main()
 // ---------------------------------------------------------------------------------------------------------
 void processInput(GLFWwindow* window, std::shared_ptr<yk::Plane> plane_ptr)
 {
+    float unit_step_size = 0.02f;
+    float x_offset = 0.0f;
+    float y_offset = 0.0f;
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, true);
     }
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-        plane_ptr->MoveY(0.01f);
+        y_offset = unit_step_size;
     }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-        plane_ptr->MoveY(-0.01f);
+        y_offset = -1 * unit_step_size;
     }
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-        plane_ptr->MoveX(-0.01f);
+        x_offset = -1 * unit_step_size;
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-        plane_ptr->MoveX(0.01f);
+        x_offset = unit_step_size;
     }
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) { // 这里为什么摁空格键一次，反而会触发多次
         std::cout << "launch a guided missile" << std::endl;
     }
+    plane_ptr->Move(x_offset, y_offset);
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
