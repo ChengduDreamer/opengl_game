@@ -28,7 +28,12 @@ message("CMAKE_TOOLCHAIN_FILE = " ${CMAKE_TOOLCHAIN_FILE})
 
 set(game_SOURCES 
 	${CMAKE_SOURCE_DIR}/glad/src/glad.c
+	src/plane_factory.cpp
+	src/plane.cpp
+	src/main_plane.cpp
     src/main.cpp
+	src/setting.cpp
+	src/common/time_util.cpp
 )
 add_executable(${PROJECT_NAME}
 		${game_SOURCES}
