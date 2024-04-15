@@ -3,9 +3,11 @@
 #include <GLFW/glfw3.h>
 #include <filesystem>
 #include <thread>
+#include <vector>
+#include <mutex>
 #include "setting.h"
 #include "common/time_util.h"
-#include "plane_factory.h"
+#include "element/element_factory.h"
 #include "learnopengl/shader_s.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -14,6 +16,10 @@ void processInput(GLFWwindow* window, std::shared_ptr<yk::Plane> plane_ptr);
 // settings
 const unsigned int SCR_WIDTH = 1800;
 const unsigned int SCR_HEIGHT = 1200;
+
+std::vector<std::shared_ptr<yk::Object>> g_object_vector;
+
+bool g_launch_missile = false;
 
 int main()
 {
@@ -55,12 +61,16 @@ int main()
 
     float plane_width = 0.1f;
     float plane_height = 0.12f;
-
-
-
-    std::shared_ptr<yk::Plane> plane_ptr = yk::PlaneFactory::CreatePlane("image/hero_b_1.png", "shader/hero_b_1.vs", "shader/hero_b_1.fs", 0.0f , 0.0f, plane_width, plane_height);
+    std::shared_ptr<yk::Plane> plane_ptr = yk::ElementFactory::CreatePlane("image/hero_b_1.png", "shader/hero_b_1.vs", "shader/hero_b_1.fs", -1 * plane_width / 2, -1.0f + plane_height, plane_width, plane_height);
 
  
+
+
+    
+
+
+
+    //g_object_vector.emplace_back(missile_ptr);
 
     // render loop
     // -----------
@@ -77,7 +87,35 @@ int main()
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
+       
+
         plane_ptr->Paint();
+
+        if (g_launch_missile) {
+            g_launch_missile = false;
+
+#if 0
+            static std::once_flag flag;
+            std::call_once(flag, []() {
+                float missile_width = 0.017f;
+                float missile_height = 0.035f;
+                std::shared_ptr<yk::Missile> missile_ptr = yk::ElementFactory::CreateMissile("image/missile_1.png", "shader/hero_b_1.vs", "shader/hero_b_1.fs", 0.0f, 0.0f, missile_width, missile_height);
+                g_object_vector.emplace_back(missile_ptr);
+            });
+#endif
+
+            float missile_width = 0.017f;
+            float missile_height = 0.035f;
+            std::shared_ptr<yk::Missile> missile_ptr = yk::ElementFactory::CreateMissile("image/missile_1.png", "shader/hero_b_1.vs", "shader/hero_b_1.fs", 0.0f, 0.0f, missile_width, missile_height);
+            g_object_vector.emplace_back(missile_ptr);
+            
+        }
+
+        for (auto& obj : g_object_vector) {
+            std::cout << "obj paint" << std::endl;
+            obj->Paint();
+        }
+
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
@@ -102,28 +140,27 @@ int main()
 // ---------------------------------------------------------------------------------------------------------
 void processInput(GLFWwindow* window, std::shared_ptr<yk::Plane> plane_ptr)
 {
-    float unit_step_size = 0.02f;
-    float x_offset = 0.0f;
-    float y_offset = 0.0f;
+    uint8_t plane_direction = 0;
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, true);
     }
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-        y_offset = unit_step_size;
+        plane_direction |= static_cast<uint8_t>(yk::EDirection::kU);
     }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-        y_offset = -1 * unit_step_size;
+        plane_direction |= static_cast<uint8_t>(yk::EDirection::kD);
     }
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-        x_offset = -1 * unit_step_size;
+        plane_direction |= static_cast<uint8_t>(yk::EDirection::kL);
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-        x_offset = unit_step_size;
+        plane_direction |= static_cast<uint8_t>(yk::EDirection::kR);
     }
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) { // 这里为什么摁空格键一次，反而会触发多次
         std::cout << "launch a guided missile" << std::endl;
+        g_launch_missile = true;
     }
-    plane_ptr->Move(x_offset, y_offset);
+    plane_ptr->Move(plane_direction);
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes

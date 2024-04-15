@@ -7,11 +7,12 @@
 #include <filesystem>
 #include "learnopengl/shader_s.h"
 #include "setting.h"
+#include "const_def.h"
 
 
 namespace yk {
 
-	Plane::Plane(const std::string& img_relative_path, const std::string& vs_path, const std::string& fs_path, float x, float y, float width, float height)	{
+    Object::Object(const std::string& img_relative_path, const std::string& vs_path, const std::string& fs_path, float x, float y, float width, float height)	{
 		img_relative_path_ = img_relative_path;
 		shader_vs_path_ = (Setting::GetInstance()->resource_base_path_ / vs_path).string();
 		shader_fs_path_ = (Setting::GetInstance()->resource_base_path_ / fs_path).string();
@@ -23,14 +24,14 @@ namespace yk {
 		Init();
 	}
 
-	Plane::~Plane()
+	Object::~Object()
 	{
         glDeleteVertexArrays(1, &VAO_);
         glDeleteBuffers(1, &VBO_);
         glDeleteBuffers(1, &EBO_);
 	}
 
-	void Plane::Init() {
+	void Object::Init() {
 		float vertices[] = {
 			// positions                                 // texture coords
             0.00f + width_,  0.00f,             0.0f,   1.0f, 1.0f, // top right
@@ -76,7 +77,7 @@ namespace yk {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
         //如果不启用以下两行代码，png图片透明的部分，就是黑色底
-#if 0
+#if 1
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 #endif
@@ -111,10 +112,10 @@ namespace yk {
 
         unsigned int model_loc = glGetUniformLocation(sharder_program_->ID, "model");
         glUniformMatrix4fv(model_loc, 1, GL_FALSE, glm::value_ptr(translation_matrix_));
-        //??? 其实这里还是处于标准化设备坐标系？ 怎么理解当前的坐标模式与 后面所学的 坐标系统
+        HAVE_QUESTIONS("其实这里还是处于标准化设备坐标系？ 怎么理解当前的坐标模式与 后面所学的 坐标系统")
 	}
 
-    void Plane::Paint() {
+    void Object::Paint() {
         // bind textures on corresponding texture units
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture0_);
@@ -124,18 +125,41 @@ namespace yk {
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     }
 
-    void Plane::Move(float x_offset, float y_offset) {
+    void Object::Move(uint8_t direction) {
+        float x_offset = 0.0f;
+        float y_offset = 0.0f;
+        if (direction & static_cast<uint8_t>(yk::EDirection::kU)) {
+            y_offset = unit_step_size_;
+        }
+
+        if (direction & static_cast<uint8_t>(yk::EDirection::kD)) {
+            y_offset = -1 * unit_step_size_;
+        }
+
+        if (direction & static_cast<uint8_t>(yk::EDirection::kL)) {
+            x_offset = -1 * unit_step_size_;
+        }
+        
+        if (direction & static_cast<uint8_t>(yk::EDirection::kR)) {
+            x_offset = unit_step_size_;
+        }
+        Move(x_offset, y_offset);
+    }
+
+    void Object::Move(float x_offset, float y_offset) {
         glm::vec3 offset = glm::vec3(x_offset, y_offset, 0.0f);
         GLfloat position[4] = {0.0f, };
         //禁止越界(超越窗口)
+        HAVE_QUESTIONS("这里是怎么判断越界的，等后面再研究下")
         glm::vec3 object_position = glm::vec3(translation_matrix_ * glm::vec4(x_offset, y_offset, 0.0f, 1.0f));
-        //std::cout << "object_position x = " << object_position.x << " object_position y = " << object_position.y << std::endl;
+        std::cout << "object_position x = " << object_position.x << " object_position y = " << object_position.y << std::endl;
         if (object_position.x < -1.0f || object_position.x > (1.0f - width_)) {
             offset.x = 0;
         }
         if (object_position.y < (-1.0 + height_) || object_position.y > 1.0f) {
             offset.y = 0;
         }
+        sharder_program_->use();
         translation_matrix_ = glm::translate(translation_matrix_, offset);
         unsigned int model_loc = glGetUniformLocation(sharder_program_->ID, "model");
         glUniformMatrix4fv(model_loc, 1, GL_FALSE, glm::value_ptr(translation_matrix_));

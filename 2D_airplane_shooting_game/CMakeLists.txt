@@ -18,6 +18,7 @@ endif()
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 include_directories(${CMAKE_SOURCE_DIR}/glad/include)
+include_directories(${CMAKE_SOURCE_DIR}/src)
 include_directories($ENV{GLFW_PATH}/include)
 include_directories($ENV{STD_IMAGE_PATH}/include)
 include_directories($ENV{GLM_PATH})
@@ -28,9 +29,11 @@ message("CMAKE_TOOLCHAIN_FILE = " ${CMAKE_TOOLCHAIN_FILE})
 
 set(game_SOURCES 
 	${CMAKE_SOURCE_DIR}/glad/src/glad.c
-	src/plane_factory.cpp
-	src/plane.cpp
-	src/main_plane.cpp
+	src/element/element_factory.cpp
+	src/element/plane.cpp
+	src/element/object.cpp
+	src/element/main_plane.cpp
+	src/element/missile.cpp
     src/main.cpp
 	src/setting.cpp
 	src/common/time_util.cpp

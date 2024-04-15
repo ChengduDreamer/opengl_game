@@ -10,13 +10,22 @@
 class Shader;
 
 namespace yk {
-	class Plane {
+
+	enum class EDirection {
+		kU = 1,
+		kD = 2,
+		kL = 4,
+		kR = 8,
+	};
+
+	class Object {
 	public:
 		
-		Plane(const std::string& img_relative_path, const std::string& vs_path, const std::string& fs_path, float x, float y, float width, float height);
-		virtual ~Plane();
+		Object(const std::string& img_relative_path, const std::string& vs_path, const std::string& fs_path, float x, float y, float width, float height);
+		virtual ~Object();
 		void Init();
-		void Paint();
+		virtual void Paint();
+		void Move(uint8_t direction);
 		void Move(float x, float y);
 
 		std::string img_relative_path_ = "";
@@ -40,6 +49,9 @@ namespace yk {
 
 		//操作位移使用
 		glm::mat4 translation_matrix_;
+
+		// speed
+		float unit_step_size_ = 0.02f;
 
 		unsigned int VBO_ = 0, VAO_ = 0, EBO_ = 0;
 
