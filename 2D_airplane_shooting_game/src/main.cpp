@@ -9,6 +9,7 @@
 #include "common/time_util.h"
 #include "element/element_factory.h"
 #include "learnopengl/shader_s.h"
+#include "game_context.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window, std::shared_ptr<yk::Plane> plane_ptr);
@@ -56,25 +57,20 @@ int main()
         return -1;
     }
 
-    /*std::shared_ptr<yk::Plane> plane_ptr = yk::PlaneFactory::CreatePlane("image/hero_b_1.png", "shader/hero_b_1.vs", "shader/hero_b_1.fs", -0.05f, -0.83f, 0.1f, 0.12f);*/
 
-
+    //主控飞机1
     float plane_width = 0.1f;
     float plane_height = 0.12f;
     std::shared_ptr<yk::Plane> plane_ptr = yk::ElementFactory::CreatePlane("image/hero_b_1.png", "shader/hero_b_1.vs", "shader/hero_b_1.fs", -1 * plane_width / 2, -1.0f + plane_height, plane_width, plane_height);
-
- 
-
-
+    yk::GameContext::GetInstance()->AddOurObject(plane_ptr);
     
+    
+    //主控飞机2 to do
 
 
-
-    //g_object_vector.emplace_back(missile_ptr);
 
     // render loop
     // -----------
-    // 这种模式下游戏的帧率是多少呢？？？
     while (!glfwWindowShouldClose(window))
     {
         uint64_t before_time = yk::GetCurrentTimestamp();
@@ -104,19 +100,18 @@ int main()
             });
 #endif
 
+            yk::Position plane_pos = plane_ptr->GetCurrentHeadPosition();
             float missile_width = 0.017f;
             float missile_height = 0.035f;
-            std::shared_ptr<yk::Missile> missile_ptr = yk::ElementFactory::CreateMissile("image/missile_1.png", "shader/hero_b_1.vs", "shader/hero_b_1.fs", 0.0f, 0.0f, missile_width, missile_height);
-            g_object_vector.emplace_back(missile_ptr);
-            
+            std::shared_ptr<yk::Missile> missile_ptr = yk::ElementFactory::CreateMissile("image/missile_1.png", "shader/hero_b_1.vs", "shader/hero_b_1.fs", plane_pos.x - missile_width / 2, plane_pos.y + missile_height, missile_width, missile_height);
+            missile_ptr->SetDirection(static_cast<uint8_t>(yk::EDirection::kU));
+            yk::GameContext::GetInstance()->AddOurObject(missile_ptr);
         }
 
-        for (auto& obj : g_object_vector) {
+        for (auto& obj : yk::GameContext::GetInstance()->our_objects_) {
             std::cout << "obj paint" << std::endl;
             obj->Paint();
         }
-
-
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
         glfwSwapBuffers(window);
@@ -129,7 +124,6 @@ int main()
             std::this_thread::sleep_for(std::chrono::milliseconds(per_frame_time - diff_time));
         }
     }
-
     // glfw: terminate, clearing all previously allocated GLFW resources.
     // ------------------------------------------------------------------
     glfwTerminate();
@@ -140,27 +134,27 @@ int main()
 // ---------------------------------------------------------------------------------------------------------
 void processInput(GLFWwindow* window, std::shared_ptr<yk::Plane> plane_ptr)
 {
-    uint8_t plane_direction = 0;
+    uint8_t plane_direction_combination = static_cast<uint8_t>(yk::EDirection::kS);
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, true);
     }
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-        plane_direction |= static_cast<uint8_t>(yk::EDirection::kU);
+        plane_direction_combination |= static_cast<uint8_t>(yk::EDirection::kU);
     }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-        plane_direction |= static_cast<uint8_t>(yk::EDirection::kD);
+        plane_direction_combination |= static_cast<uint8_t>(yk::EDirection::kD);
     }
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-        plane_direction |= static_cast<uint8_t>(yk::EDirection::kL);
+        plane_direction_combination |= static_cast<uint8_t>(yk::EDirection::kL);
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-        plane_direction |= static_cast<uint8_t>(yk::EDirection::kR);
+        plane_direction_combination |= static_cast<uint8_t>(yk::EDirection::kR);
     }
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) { // 这里为什么摁空格键一次，反而会触发多次
         std::cout << "launch a guided missile" << std::endl;
         g_launch_missile = true;
     }
-    plane_ptr->Move(plane_direction);
+    plane_ptr->SetDirection(plane_direction_combination);
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes

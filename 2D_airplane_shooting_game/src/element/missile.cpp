@@ -12,7 +12,6 @@ namespace yk {
 	}
 
 	void Missile::Paint() {
-		Move(static_cast<uint8_t>(yk::EDirection::kU));
 		Object::Paint();
 	}
 }

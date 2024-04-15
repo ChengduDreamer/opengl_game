@@ -2,16 +2,19 @@
 #include <string>
 #include <cstdint>
 #include <memory>
+#include <tuple>
 //矩阵相关头文件
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include "common/common.h"
 
 class Shader;
 
 namespace yk {
 
 	enum class EDirection {
+		kS = 0, //静止
 		kU = 1,
 		kD = 2,
 		kL = 4,
@@ -25,8 +28,15 @@ namespace yk {
 		virtual ~Object();
 		void Init();
 		virtual void Paint();
-		void Move(uint8_t direction);
+		void Move(uint8_t direction_combination);
 		void Move(float x, float y);
+		void SetDirection(uint8_t direction_combination);
+		Position GetCurrentPosition();
+		Position GetCurrentHeadPosition(); // 获取头部位置
+
+		uint8_t direction_combination_ = static_cast<uint8_t>(EDirection::kS);
+		
+
 
 		std::string img_relative_path_ = "";
 

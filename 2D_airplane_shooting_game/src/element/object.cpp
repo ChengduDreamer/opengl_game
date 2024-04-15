@@ -116,6 +116,7 @@ namespace yk {
 	}
 
     void Object::Paint() {
+        Move(direction_combination_);
         // bind textures on corresponding texture units
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture0_);
@@ -125,22 +126,22 @@ namespace yk {
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     }
 
-    void Object::Move(uint8_t direction) {
+    void Object::Move(uint8_t direction_combination) {
         float x_offset = 0.0f;
         float y_offset = 0.0f;
-        if (direction & static_cast<uint8_t>(yk::EDirection::kU)) {
+        if (direction_combination & static_cast<uint8_t>(yk::EDirection::kU)) {
             y_offset = unit_step_size_;
         }
 
-        if (direction & static_cast<uint8_t>(yk::EDirection::kD)) {
+        if (direction_combination & static_cast<uint8_t>(yk::EDirection::kD)) {
             y_offset = -1 * unit_step_size_;
         }
 
-        if (direction & static_cast<uint8_t>(yk::EDirection::kL)) {
+        if (direction_combination & static_cast<uint8_t>(yk::EDirection::kL)) {
             x_offset = -1 * unit_step_size_;
         }
         
-        if (direction & static_cast<uint8_t>(yk::EDirection::kR)) {
+        if (direction_combination & static_cast<uint8_t>(yk::EDirection::kR)) {
             x_offset = unit_step_size_;
         }
         Move(x_offset, y_offset);
@@ -164,4 +165,21 @@ namespace yk {
         unsigned int model_loc = glGetUniformLocation(sharder_program_->ID, "model");
         glUniformMatrix4fv(model_loc, 1, GL_FALSE, glm::value_ptr(translation_matrix_));
     }
+
+    void Object::SetDirection(uint8_t direction_combination) {
+        direction_combination_ = direction_combination;
+    }
+
+    Position Object::GetCurrentPosition() {
+        glm::vec3 object_position = glm::vec3(translation_matrix_ * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+        return { object_position.x, object_position.y};
+    }
+
+    Position Object::GetCurrentHeadPosition() {
+        auto pos = GetCurrentPosition();
+        pos.x += (width_ / 2);
+        // to do 区分飞机头的方向
+        return pos;
+    }
+
 }
