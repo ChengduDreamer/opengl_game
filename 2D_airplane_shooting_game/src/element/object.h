@@ -33,6 +33,9 @@ namespace yk {
 		void SetDirection(uint8_t direction_combination);
 		Position GetCurrentPosition();
 		Position GetCurrentHeadPosition(); // 获取头部位置
+		bool GoBeyondWindowBoundaries();
+		bool can_go_beyond_window_boundaries_ = false; //是否可以超出窗口边界
+		bool destory_ = false;
 
 		uint8_t direction_combination_ = static_cast<uint8_t>(EDirection::kS);
 		
@@ -61,7 +64,7 @@ namespace yk {
 		glm::mat4 translation_matrix_;
 
 		// speed
-		float unit_step_size_ = 0.02f;
+		float unit_step_size_ = 0.01f;
 
 		unsigned int VBO_ = 0, VAO_ = 0, EBO_ = 0;
 

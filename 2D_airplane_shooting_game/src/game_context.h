@@ -16,6 +16,7 @@ namespace yk {
 
 		void AddEnemyObject(const std::shared_ptr<Object>& obj);
 		void AddOurObject(const std::shared_ptr<Object>& obj);
+		void DrawObjects();
 
 		//因为有敌我双方，故这里用两个容器来存放 双方的 object
 		//enemy

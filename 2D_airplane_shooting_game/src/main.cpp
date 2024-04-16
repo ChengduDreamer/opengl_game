@@ -108,10 +108,9 @@ int main()
             yk::GameContext::GetInstance()->AddOurObject(missile_ptr);
         }
 
-        for (auto& obj : yk::GameContext::GetInstance()->our_objects_) {
-            std::cout << "obj paint" << std::endl;
-            obj->Paint();
-        }
+        
+        yk::GameContext::GetInstance()->DrawObjects();
+       
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
         glfwSwapBuffers(window);

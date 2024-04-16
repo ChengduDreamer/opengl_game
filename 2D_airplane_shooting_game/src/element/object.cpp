@@ -26,6 +26,7 @@ namespace yk {
 
 	Object::~Object()
 	{
+        std::cout << "~Object" << std::endl;
         glDeleteVertexArrays(1, &VAO_);
         glDeleteBuffers(1, &VBO_);
         glDeleteBuffers(1, &EBO_);
@@ -124,6 +125,10 @@ namespace yk {
         sharder_program_->use();
         glBindVertexArray(VAO_);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+        if (GoBeyondWindowBoundaries()) {
+            destory_ = true;
+        }
     }
 
     void Object::Move(uint8_t direction_combination) {
@@ -151,14 +156,16 @@ namespace yk {
         glm::vec3 offset = glm::vec3(x_offset, y_offset, 0.0f);
         GLfloat position[4] = {0.0f, };
         //禁止越界(超越窗口)
-        HAVE_QUESTIONS("这里是怎么判断越界的，等后面再研究下")
-        glm::vec3 object_position = glm::vec3(translation_matrix_ * glm::vec4(x_offset, y_offset, 0.0f, 1.0f));
-        std::cout << "object_position x = " << object_position.x << " object_position y = " << object_position.y << std::endl;
-        if (object_position.x < -1.0f || object_position.x > (1.0f - width_)) {
-            offset.x = 0;
-        }
-        if (object_position.y < (-1.0 + height_) || object_position.y > 1.0f) {
-            offset.y = 0;
+        HAVE_QUESTIONS("这里是怎么判断越界的，等后面再研究下");
+        if (!can_go_beyond_window_boundaries_) {
+            glm::vec3 object_position = glm::vec3(translation_matrix_ * glm::vec4(x_offset, y_offset, 0.0f, 1.0f));
+            std::cout << "object_position x = " << object_position.x << " object_position y = " << object_position.y << std::endl;
+            if (object_position.x < -1.0f || object_position.x >(1.0f - width_)) {
+                offset.x = 0;
+            }
+            if (object_position.y < (-1.0 + height_) || object_position.y > 1.0f) {
+                offset.y = 0;
+            }
         }
         sharder_program_->use();
         translation_matrix_ = glm::translate(translation_matrix_, offset);
@@ -170,6 +177,7 @@ namespace yk {
         direction_combination_ = direction_combination;
     }
 
+    HAVE_QUESTIONS("获取位置这个地方的逻辑，等后面再研究下");
     Position Object::GetCurrentPosition() {
         glm::vec3 object_position = glm::vec3(translation_matrix_ * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
         return { object_position.x, object_position.y};
@@ -182,4 +190,20 @@ namespace yk {
         return pos;
     }
 
+    bool Object::GoBeyondWindowBoundaries() {
+        auto current_pos = GetCurrentPosition();
+        if (current_pos.x < (-1.0f - width_)) {
+            return true;
+        }
+        if (current_pos.x > 1.0f) {
+            return true;
+        }
+        if (current_pos.y < -1.0f) {
+            return true;
+        }
+        if (current_pos.y > (1.0f + height_)) {
+            return true;
+        }
+        return false;
+    }
 }
