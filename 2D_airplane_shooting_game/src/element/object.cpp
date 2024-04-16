@@ -26,10 +26,11 @@ namespace yk {
 
 	Object::~Object()
 	{
-        std::cout << "~Object" << std::endl;
+        std::cout << "~------------------~Object" << std::endl;
         glDeleteVertexArrays(1, &VAO_);
         glDeleteBuffers(1, &VBO_);
         glDeleteBuffers(1, &EBO_);
+        glDeleteTextures(1, &texture0_); //如果不删除, 会导致内存泄露
 	}
 
 	void Object::Init() {
@@ -94,14 +95,12 @@ namespace yk {
         if (data)
         {
             glTexImage2D(GL_TEXTURE_2D, 0, nrChannels == 4 ? GL_RGBA : GL_RGB, width, height, 0, nrChannels == 4 ? GL_RGBA : GL_RGB, GL_UNSIGNED_BYTE, data);
-            glGenerateMipmap(GL_TEXTURE_2D);
         }
         else
         {
             std::cout << "Failed to load texture" << std::endl;
         }
         stbi_image_free(data);
-
         // tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
         // -------------------------------------------------------------------------------------------
         sharder_program_->use(); // don't forget to activate/use the shader before setting uniforms!
