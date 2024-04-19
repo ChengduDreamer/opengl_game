@@ -19,6 +19,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 include_directories(${CMAKE_SOURCE_DIR}/glad/include)
 include_directories(${CMAKE_SOURCE_DIR}/src)
+include_directories(${CMAKE_SOURCE_DIR}/src/element)
 include_directories($ENV{GLFW_PATH}/include)
 include_directories($ENV{STD_IMAGE_PATH}/include)
 include_directories($ENV{GLM_PATH})
@@ -34,6 +35,7 @@ set(game_SOURCES
 	src/element/object.cpp
 	src/element/main_plane.cpp
 	src/element/missile.cpp
+	src/element/enemy_plane.cpp
     src/main.cpp
 	src/setting.cpp
 	src/game_context.cpp

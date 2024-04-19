@@ -15,8 +15,8 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window, std::shared_ptr<yk::Plane> plane_ptr);
 
 // settings
-const unsigned int SCR_WIDTH = 1800;
-const unsigned int SCR_HEIGHT = 1200;
+const unsigned int SCR_WIDTH = 300;
+const unsigned int SCR_HEIGHT = 200;
 
 std::vector<std::shared_ptr<yk::Object>> g_object_vector;
 
@@ -61,7 +61,7 @@ int main()
     //主控飞机1
     float plane_width = 0.1f;
     float plane_height = 0.12f;
-    std::shared_ptr<yk::Plane> plane_ptr = yk::ElementFactory::CreatePlane("image/hero_b_1.png", "shader/hero_b_1.vs", "shader/hero_b_1.fs", -1 * plane_width / 2, -1.0f + plane_height, plane_width, plane_height);
+    std::shared_ptr<yk::MainPlane> plane_ptr = yk::ElementFactory::CreateMainPlane("image/hero_b_1.png", "shader/hero_b_1.vs", "shader/hero_b_1.fs", -1 * plane_width / 2, -1.0f + plane_height, plane_width, plane_height);
     yk::GameContext::GetInstance()->AddOurObject(plane_ptr);
     
     
@@ -82,33 +82,34 @@ int main()
         // ------
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-
+        
        
 
         plane_ptr->Paint();
 
         if (g_launch_missile) {
             g_launch_missile = false;
-
-#if 0
-            static std::once_flag flag;
-            std::call_once(flag, []() {
-                float missile_width = 0.017f;
-                float missile_height = 0.035f;
-                std::shared_ptr<yk::Missile> missile_ptr = yk::ElementFactory::CreateMissile("image/missile_1.png", "shader/hero_b_1.vs", "shader/hero_b_1.fs", 0.0f, 0.0f, missile_width, missile_height);
-                g_object_vector.emplace_back(missile_ptr);
-            });
-#endif
-
-            yk::Position plane_pos = plane_ptr->GetCurrentHeadPosition();
-            float missile_width = 0.017f;
-            float missile_height = 0.035f;
-            std::shared_ptr<yk::Missile> missile_ptr = yk::ElementFactory::CreateMissile("image/missile_1.png", "shader/hero_b_1.vs", "shader/hero_b_1.fs", plane_pos.x - missile_width / 2, plane_pos.y + missile_height, missile_width, missile_height);
-            missile_ptr->SetDirection(static_cast<uint8_t>(yk::EDirection::kU));
-            yk::GameContext::GetInstance()->AddOurObject(missile_ptr);
+            plane_ptr->LaunchMissile();
         }
 
-        
+        // 构造敌方元素   
+        if (yk::GameContext::GetInstance()->GetEnemyPlaneObjectSize() < 14) {
+            static yk::Position birth_pos;
+            birth_pos.y = 0.78f;
+            if (birth_pos.x > 0.88f) {
+                birth_pos.x = -0.88f;
+            }
+            float plane_width = 0.1f;
+            float plane_height = 0.12f;
+            std::shared_ptr<yk::EnemyPlane> plane_ptr = yk::ElementFactory::CreateEnemyPlane("image/enemy.png", "shader/hero_b_1.vs", "shader/hero_b_1.fs", birth_pos.x, birth_pos.y, plane_width, plane_height);
+            plane_ptr->SetDirection(static_cast<uint8_t>(yk::EDirection::kD));
+            yk::GameContext::GetInstance()->AddEnemyPlaneObject(plane_ptr);
+            birth_pos.x += (plane_width * 2.5);
+        }
+
+       yk::GameContext::GetInstance()->EnemyAutoLanuchMissile();
+
+
         yk::GameContext::GetInstance()->DrawObjects();
        
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)

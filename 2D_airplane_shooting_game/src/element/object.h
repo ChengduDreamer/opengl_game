@@ -21,6 +21,16 @@ namespace yk {
 		kR = 8,
 	};
 
+	enum class EElementType {
+		kPlane,
+		kMissile,
+	};
+
+	enum class ECampType {
+		kOur,
+		kEnemy,
+	};
+
 	class Object {
 	public:
 		
@@ -38,9 +48,11 @@ namespace yk {
 		bool destory_ = false;
 
 		uint8_t direction_combination_ = static_cast<uint8_t>(EDirection::kS);
+
+		EElementType element_type_ = EElementType::kPlane;
+
+		ECampType camp_type_ = ECampType::kOur;
 		
-
-
 		std::string img_relative_path_ = "";
 
 		std::string shader_vs_path_ = "";

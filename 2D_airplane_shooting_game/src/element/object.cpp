@@ -26,7 +26,7 @@ namespace yk {
 
 	Object::~Object()
 	{
-        std::cout << "~------------------~Object" << std::endl;
+        //std::cout << "~------------------~Object" << std::endl;
         glDeleteVertexArrays(1, &VAO_);
         glDeleteBuffers(1, &VBO_);
         glDeleteBuffers(1, &EBO_);
@@ -158,7 +158,7 @@ namespace yk {
         HAVE_QUESTIONS("这里是怎么判断越界的，等后面再研究下");
         if (!can_go_beyond_window_boundaries_) {
             glm::vec3 object_position = glm::vec3(translation_matrix_ * glm::vec4(x_offset, y_offset, 0.0f, 1.0f));
-            std::cout << "object_position x = " << object_position.x << " object_position y = " << object_position.y << std::endl;
+            //std::cout << "object_position x = " << object_position.x << " object_position y = " << object_position.y << std::endl;
             if (object_position.x < -1.0f || object_position.x >(1.0f - width_)) {
                 offset.x = 0;
             }
@@ -185,7 +185,12 @@ namespace yk {
     Position Object::GetCurrentHeadPosition() {
         auto pos = GetCurrentPosition();
         pos.x += (width_ / 2);
-        // to do 区分飞机头的方向
+        if (direction_combination_ & static_cast<uint8_t>(yk::EDirection::kU)) {
+            pos.y = pos.y + 0.0f;
+        }
+        else {
+            pos.y = pos.y - height_;
+        }
         return pos;
     }
 
