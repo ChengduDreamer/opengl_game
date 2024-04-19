@@ -10,6 +10,7 @@
 #include "element/element_factory.h"
 #include "learnopengl/shader_s.h"
 #include "game_context.h"
+#include "background.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window, std::shared_ptr<yk::Plane> plane_ptr);
@@ -69,6 +70,12 @@ int main()
 
 
 
+    // background
+    std::shared_ptr<yk::Background> background_ptr = std::make_shared<yk::Background>("image/bg_512x768.jpg", "shader/hero_b_1.vs", "shader/hero_b_1.fs", -1.0f, 1.0f, 2.0f, 2.0f);
+
+
+
+
     // render loop
     // -----------
     while (!glfwWindowShouldClose(window))
@@ -83,6 +90,7 @@ int main()
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
         
+        background_ptr->Paint();
        
 
         plane_ptr->Paint();
@@ -92,23 +100,12 @@ int main()
             plane_ptr->LaunchMissile();
         }
 
+
+
         // 构造敌方元素   
-        if (yk::GameContext::GetInstance()->GetEnemyPlaneObjectSize() < 14) {
-            static yk::Position birth_pos;
-            birth_pos.y = 0.78f;
-            if (birth_pos.x > 0.88f) {
-                birth_pos.x = -0.88f;
-            }
-            float plane_width = 0.1f;
-            float plane_height = 0.12f;
-            std::shared_ptr<yk::EnemyPlane> plane_ptr = yk::ElementFactory::CreateEnemyPlane("image/enemy.png", "shader/hero_b_1.vs", "shader/hero_b_1.fs", birth_pos.x, birth_pos.y, plane_width, plane_height);
-            plane_ptr->SetDirection(static_cast<uint8_t>(yk::EDirection::kD));
-            yk::GameContext::GetInstance()->AddEnemyPlaneObject(plane_ptr);
-            birth_pos.x += (plane_width * 2.5);
-        }
+        yk::GameContext::GetInstance()->GenerateEnemyPlaneObjects();
 
-       yk::GameContext::GetInstance()->EnemyAutoLanuchMissile();
-
+        yk::GameContext::GetInstance()->EnemyAutoLanuchMissile();
 
         yk::GameContext::GetInstance()->DrawObjects();
        

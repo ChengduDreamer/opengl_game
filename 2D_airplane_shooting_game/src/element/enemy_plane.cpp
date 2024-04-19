@@ -6,6 +6,7 @@ namespace yk {
 
 	EnemyPlane::EnemyPlane(const std::string& img_relative_path, const std::string& vs_path, const std::string& fs_path, float x, float y, float width, float height) :
 		Plane(img_relative_path, vs_path, fs_path, x, y, width, height) {
+		can_go_beyond_window_boundaries_ = true;
 		camp_type_ = ECampType::kEnemy;
 		last_lanuch_time_ = direction_update_time_ = yk::GetCurrentTimestamp();
 		{
@@ -43,6 +44,17 @@ namespace yk {
 			}
 			else if (2 == random_number) {
 				direction_combination_ |= static_cast<uint8_t>(yk::EDirection::kR);
+			}
+
+			auto pos = GetCurrentPosition();
+
+			if (pos.x < -1.0f + width_) {
+				direction_combination_ &= (~static_cast<uint8_t>(yk::EDirection::kL));
+				direction_combination_ |= static_cast<uint8_t>(yk::EDirection::kR);
+			}
+			else if (pos.x > 1.0f -width_) {
+				direction_combination_ &= (~static_cast<uint8_t>(yk::EDirection::kR));
+				direction_combination_ |= static_cast<uint8_t>(yk::EDirection::kL);
 			}
 			direction_update_time_ = yk::GetCurrentTimestamp();
 		}

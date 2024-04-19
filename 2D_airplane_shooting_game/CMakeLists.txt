@@ -36,6 +36,7 @@ set(game_SOURCES
 	src/element/main_plane.cpp
 	src/element/missile.cpp
 	src/element/enemy_plane.cpp
+	src/element/background.cpp
     src/main.cpp
 	src/setting.cpp
 	src/game_context.cpp
