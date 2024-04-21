@@ -14,7 +14,7 @@ namespace yk {
 		float missile_width = 0.017f;
 		float missile_height = 0.035f;
 		std::shared_ptr<yk::Missile> missile_ptr = yk::ElementFactory::CreateMissile("image/missile_1.png", "shader/hero_b_1.vs", "shader/hero_b_1.fs", plane_pos.x - missile_width / 2, 
-			direction_combination_ & static_cast<uint8_t>(yk::EDirection::kU) ? plane_pos.y + missile_height : plane_pos.y, missile_width, missile_height);
+			camp_type_ == ECampType::kOur ? plane_pos.y + missile_height : plane_pos.y, missile_width, missile_height);
 
 		switch (camp_type_)
 		{

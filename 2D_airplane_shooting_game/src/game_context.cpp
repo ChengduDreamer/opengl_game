@@ -1,6 +1,7 @@
 #include "game_context.h"
 #include <iostream>
 #include <random>
+#include <SFML/Audio.hpp>
 #include "object.h"
 #include "enemy_plane.h"
 #include "missile.h"
@@ -8,7 +9,7 @@
 #include "element_factory.h"
 namespace yk {
 	GameContext::GameContext() {
-	
+		bk_music_player_ = std::make_shared<sf::Music>();
 	}
 
 	GameContext::~GameContext() {
@@ -87,7 +88,6 @@ namespace yk {
 				xr = distribution(gen);
 			}
 	
-
 			static yk::Position birth_pos;
 			birth_pos.y = 0.78f * (yr / 10);
 			if (birth_pos.x > 0.88f) {
@@ -100,5 +100,23 @@ namespace yk {
 			yk::GameContext::GetInstance()->AddEnemyPlaneObject(plane_ptr);
 			birth_pos.x += (plane_width * (xr / 10));
 		}
+	}
+
+	void GameContext::PlayBackgroundMusic() {
+		auto bk_music_path = Setting::GetInstance()->GetBackgroundMusicPath();
+		std::string bk_music_path_str = bk_music_path.string();
+		// 加载音频文件
+		if (!bk_music_player_->openFromFile(bk_music_path_str)) {
+			std::cerr << "load bk music error" << std::endl;
+			return; // 加载失败
+		}
+		// 设置循环播放
+		bk_music_player_->setLoop(true);
+		// 播放音乐
+		bk_music_player_->play();
+	}
+
+	void GameContext::StopPlay() {
+		bk_music_player_->stop();
 	}
 }

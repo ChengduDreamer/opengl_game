@@ -1,5 +1,5 @@
 #include "setting.h"
-
+#include <iostream>
 namespace yk {
 	Setting::Setting() {
 	
@@ -7,5 +7,17 @@ namespace yk {
 
 	Setting::~Setting() {
 	
+	}
+
+	std::filesystem::path Setting::GetBackgroundMusicPath() {
+
+		std::cout << "resource_base_path_ = " << resource_base_path_.string() << std::endl;
+
+		auto ms_path = resource_base_path_ / background_music_path_;
+
+
+		std::cout << "ms_path = " << ms_path.string() << std::endl;
+
+		return ms_path;
 	}
 }

@@ -92,7 +92,7 @@ namespace yk {
         std::filesystem::path hero_img_path = Setting::GetInstance()->resource_base_path_ / img_relative_path_;
         std::string hero_img_path_str = hero_img_path.string();
         unsigned char* data = stbi_load(hero_img_path_str.c_str(), &width, &height, &nrChannels, 0);
-        std::cout << "nrChannels = " << nrChannels << std::endl;
+        //std::cout << "nrChannels = " << nrChannels << std::endl;
         if (data)
         {
             glTexImage2D(GL_TEXTURE_2D, 0, nrChannels == 4 ? GL_RGBA : GL_RGB, width, height, 0, nrChannels == 4 ? GL_RGBA : GL_RGB, GL_UNSIGNED_BYTE, data);
@@ -186,10 +186,11 @@ namespace yk {
     Position Object::GetCurrentHeadPosition() {
         auto pos = GetCurrentPosition();
         pos.x += (width_ / 2);
-        if (direction_combination_ & static_cast<uint8_t>(yk::EDirection::kU)) {
+
+        if (yk::ECampType::kOur == camp_type_) {
             pos.y = pos.y + 0.0f;
         }
-        else {
+        else if (yk::ECampType::kEnemy == camp_type_) {
             pos.y = pos.y - height_;
         }
         return pos;

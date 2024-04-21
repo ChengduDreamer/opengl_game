@@ -16,12 +16,13 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window, std::shared_ptr<yk::Plane> plane_ptr);
 
 // settings
-const unsigned int SCR_WIDTH = 300;
-const unsigned int SCR_HEIGHT = 200;
+const unsigned int SCR_WIDTH = 1200;
+const unsigned int SCR_HEIGHT = 800;
 
 std::vector<std::shared_ptr<yk::Object>> g_object_vector;
 
 bool g_launch_missile = false;
+uint64_t g_last_launch_missile_time = 0;
 
 int main()
 {
@@ -59,6 +60,9 @@ int main()
     }
 
 
+    yk::GameContext::GetInstance()->PlayBackgroundMusic();
+
+
     //主控飞机1
     float plane_width = 0.1f;
     float plane_height = 0.12f;
@@ -91,16 +95,13 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT);
         
         background_ptr->Paint();
-       
-
+        
         plane_ptr->Paint();
 
         if (g_launch_missile) {
             g_launch_missile = false;
             plane_ptr->LaunchMissile();
         }
-
-
 
         // 构造敌方元素   
         yk::GameContext::GetInstance()->GenerateEnemyPlaneObjects();
@@ -124,6 +125,7 @@ int main()
     // glfw: terminate, clearing all previously allocated GLFW resources.
     // ------------------------------------------------------------------
     glfwTerminate();
+    yk::GameContext::GetInstance()->StopPlay();
     return 0;
 }
 
@@ -149,7 +151,11 @@ void processInput(GLFWwindow* window, std::shared_ptr<yk::Plane> plane_ptr)
     }
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) { // 这里为什么摁空格键一次，反而会触发多次
         std::cout << "launch a guided missile" << std::endl;
-        g_launch_missile = true;
+        auto current_time = yk::GetCurrentTimestamp();
+        if (current_time - g_last_launch_missile_time > 60) {
+            g_launch_missile = true;
+            g_last_launch_missile_time = current_time;
+        }
     }
     plane_ptr->SetDirection(plane_direction_combination);
 }
