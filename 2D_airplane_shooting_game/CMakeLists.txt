@@ -17,6 +17,8 @@ endif()
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
+add_definitions(-DYK_RESOURCE_PATH=$ENV{RESOURCE_BASE_PATH})
+
 find_package(SFML COMPONENTS system window graphics CONFIG REQUIRED)
 
 include_directories(${CMAKE_SOURCE_DIR}/glad/include)

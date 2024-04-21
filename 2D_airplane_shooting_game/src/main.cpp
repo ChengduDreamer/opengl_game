@@ -1,6 +1,7 @@
 #include <iostream>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <string>
 #include <filesystem>
 #include <thread>
 #include <vector>
@@ -24,9 +25,25 @@ std::vector<std::shared_ptr<yk::Object>> g_object_vector;
 bool g_launch_missile = false;
 uint64_t g_last_launch_missile_time = 0;
 
+void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    if (action == GLFW_PRESS)
+    {
+        std::cout << "按下的按键键值: " << key << std::endl;
+    }
+}
+
+void gamepadCallback(int jid, int event)
+{
+    std::cout << "joystick id = " << jid << " event = " << event << std::endl;
+    // 在此处理游戏手柄事件
+}
+
+
 int main()
 {
-    yk::Setting::GetInstance()->resource_base_path_ = "G:/code/yuanqi/opengl_game/2D_airplane_shooting_game/res";
+    
+    yk::Setting::GetInstance()->resource_base_path_ = YK_RESOURCE_PATH;
 
     // glfw: initialize and configure
     // ------------------------------
@@ -77,7 +94,11 @@ int main()
     // background
     std::shared_ptr<yk::Background> background_ptr = std::make_shared<yk::Background>("image/bg_512x768.jpg", "shader/hero_b_1.vs", "shader/hero_b_1.fs", -1.0f, 1.0f, 2.0f, 2.0f);
 
+    // 设置键盘回调函数
+    glfwSetKeyCallback(window, keyCallback);
 
+    // 设置游戏手柄回调函数
+    glfwSetJoystickCallback(gamepadCallback);
 
 
     // render loop
@@ -88,6 +109,31 @@ int main()
         // input
         // -----
         processInput(window, plane_ptr);
+
+
+        // 获取手柄的按钮状态
+        int count;
+        const unsigned char* buttons = glfwGetJoystickButtons(GLFW_JOYSTICK_1, &count);
+        if (buttons != nullptr && count > 0)
+        {
+            // 检查按钮 0 是否按下
+            if (buttons[0] == GLFW_PRESS)
+            {
+                std::cout << "按钮 0 被按下" << std::endl;
+
+                
+            }
+            //std::cout << "count = " << count << std::endl;
+            for (size_t i = 0; i < count; ++i)
+            {
+                std::cout << std::hex << std::setw(2) << std::setfill('0')
+                    << static_cast<int>(buttons[i]) << ' ';
+            }
+            std::cout << std::endl;
+        }
+
+
+
 
         // render
         // ------

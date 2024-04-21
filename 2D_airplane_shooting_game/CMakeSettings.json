@@ -1,11 +1,11 @@
 ﻿{
   "environments": [
     {
-      "GLFW_PATH": "F:/work/Lib/staticLib/vs2019/glfw3.3.8",
-      "Libyuv_PATH": "F:/work/Lib/libyuv/x86Static",
-      "STD_IMAGE_PATH": "F:/work/Lib/stb_image",
-      "GLM_PATH": "F:/work/Lib/glm-0.9.9.7/glm",
-      "VCPKG_ROOT": "g:/vcpkg"
+      "GLFW_PATH": "D:/work/Lib/staticLib/vs2019/glfw3.3.8",
+      "STD_IMAGE_PATH": "D:/work/Lib/stb_image",
+      "GLM_PATH": "D:/work/Lib/glm-0.9.9.7/glm",
+      "VCPKG_ROOT": "D:/work/lib/vcpkg/vcpkg",
+      "RESOURCE_BASE_PATH": "\"C:/stu/opengl_game/2D_airplane_shooting_game/res\""
     }
   ],
   "configurations": [
