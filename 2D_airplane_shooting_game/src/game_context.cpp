@@ -26,15 +26,28 @@ namespace yk {
 		//std::cout << "AddEnemyObjected size = "<< enemy_objects_.size() << std::endl;
 	}
 
-	void GameContext::AddOurObject(const std::shared_ptr<Object>& obj) {
-		our_objects_.emplace_back(obj);
+	void GameContext::AddOurPlaneObject(const std::shared_ptr<MainPlane>& obj) {
+		our_plane_objects_.emplace_back(obj);
+	}
+
+	void GameContext::AddOurMissileObject(const std::shared_ptr<Missile>& obj) {
+		our_missile_objects_.emplace_back(obj);
 	}
 
 	void GameContext::DrawObjects() {
 		//std::cout << "our_objects_ size = " << our_objects_.size() << std::endl;
-		for (auto iter = our_objects_.begin(); iter != our_objects_.end(); ) {
+		for (auto iter = our_plane_objects_.begin(); iter != our_plane_objects_.end(); ) {
 			if ((*iter)->destory_) {
-				iter = our_objects_.erase(iter);
+				iter = our_plane_objects_.erase(iter);
+			}
+			else {
+				(*iter)->Paint();
+				++iter;
+			}
+		}
+		for (auto iter = our_missile_objects_.begin(); iter != our_missile_objects_.end(); ) {
+			if ((*iter)->destory_) {
+				iter = our_missile_objects_.erase(iter);
 			}
 			else {
 				(*iter)->Paint();
@@ -118,5 +131,56 @@ namespace yk {
 
 	void GameContext::StopPlay() {
 		bk_music_player_->stop();
+	}
+
+	bool GameContext::CheckCollision(std::shared_ptr<Object> one, std::shared_ptr<Object> two) {
+		// x轴方向碰撞？
+		auto one_pos = one->GetCurrentPosition();
+		auto two_pos = two->GetCurrentPosition();
+		bool collision_x = one_pos.x + one->width_ >= two_pos.x && two_pos.x + two->width_ >= one_pos.x;
+		// y轴方向碰撞？
+		bool collision_y = one_pos.y + one->height_ >= two_pos.y && two_pos.y + two->height_ >= one_pos.y;
+		// 只有两个轴向都有碰撞时才碰撞
+		return collision_x && collision_y;
+	}
+
+	void GameContext::ExecuCheckCollision() {
+		for (auto our_plane_iter = our_plane_objects_.begin(); our_plane_iter != our_plane_objects_.end(); ++our_plane_iter) {
+			for (auto enemy_plane_iter = enemy_plane_objects_.begin(); enemy_plane_iter != enemy_plane_objects_.end(); ++enemy_plane_iter) {
+				if (CheckCollision(*our_plane_iter, *enemy_plane_iter)) {
+					(*our_plane_iter)->destory_ = true;
+					(*enemy_plane_iter)->destory_ = true;
+				}
+			}
+		}
+		/*for (auto our_iter = our_objects_.begin(); our_iter != our_objects_.end(); ++our_iter) {
+			for (auto mi_iter = enemy_plane_objects_.begin(); enemy_plane_iter != enemy_plane_objects_.end(); ++enemy_plane_iter) {
+				if (CheckCollision(*our_iter, *enemy_plane_iter)) {
+					(*our_iter)->destory_ = true;
+					(*enemy_plane_iter)->destory_ = true;
+				}
+			}
+		}*/
+	}
+
+	void GameContext::OurPlaneLanuchMissile() {
+		for (auto our_plane_iter = our_plane_objects_.begin(); our_plane_iter != our_plane_objects_.end(); ++our_plane_iter) {
+			(*our_plane_iter)->LaunchMissile();
+		}
+	}
+
+	std::shared_ptr<MainPlane> GameContext::GetFirstMainPlane() {
+		if (our_plane_objects_.size() > 0) {
+			return our_plane_objects_[0];
+		}
+		return nullptr;
+	}
+
+
+	std::shared_ptr<MainPlane> GameContext::GetSecondMainPlane() {
+		if (our_plane_objects_.size() > 1) {
+			return our_plane_objects_[1];
+		}
+		return nullptr;
 	}
 }

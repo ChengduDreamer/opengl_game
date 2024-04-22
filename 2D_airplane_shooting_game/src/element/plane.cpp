@@ -20,7 +20,7 @@ namespace yk {
 		{
 		case yk::ECampType::kOur:
 			missile_ptr->SetDirection(static_cast<uint8_t>(yk::EDirection::kU));
-			yk::GameContext::GetInstance()->AddOurObject(missile_ptr);
+			yk::GameContext::GetInstance()->AddOurMissileObject(missile_ptr);
 			break;
 		case yk::ECampType::kEnemy:
 			missile_ptr->SetDirection(static_cast<uint8_t>(yk::EDirection::kD));

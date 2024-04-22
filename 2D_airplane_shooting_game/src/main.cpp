@@ -14,7 +14,7 @@
 #include "background.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void processInput(GLFWwindow* window, std::shared_ptr<yk::Plane> plane_ptr);
+void processInput(GLFWwindow* window);
 
 // settings
 const unsigned int SCR_WIDTH = 1200;
@@ -81,10 +81,12 @@ int main()
 
 
     //主控飞机1
-    float plane_width = 0.1f;
-    float plane_height = 0.12f;
-    std::shared_ptr<yk::MainPlane> plane_ptr = yk::ElementFactory::CreateMainPlane("image/hero_b_1.png", "shader/hero_b_1.vs", "shader/hero_b_1.fs", -1 * plane_width / 2, -1.0f + plane_height, plane_width, plane_height);
-    yk::GameContext::GetInstance()->AddOurObject(plane_ptr);
+    {
+        float plane_width = 0.1f;
+        float plane_height = 0.12f;
+        std::shared_ptr<yk::MainPlane> plane_ptr = yk::ElementFactory::CreateMainPlane("image/hero_b_1.png", "shader/hero_b_1.vs", "shader/hero_b_1.fs", -1 * plane_width / 2, -1.0f + plane_height, plane_width, plane_height);
+        yk::GameContext::GetInstance()->AddOurPlaneObject(plane_ptr);
+    }
     
     
     //主控飞机2 to do
@@ -108,7 +110,7 @@ int main()
         uint64_t before_time = yk::GetCurrentTimestamp();
         // input
         // -----
-        processInput(window, plane_ptr);
+        processInput(window);
 
 
         // 获取手柄的按钮状态
@@ -141,12 +143,10 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT);
         
         background_ptr->Paint();
-        
-        plane_ptr->Paint();
 
         if (g_launch_missile) {
             g_launch_missile = false;
-            plane_ptr->LaunchMissile();
+            yk::GameContext::GetInstance()->OurPlaneLanuchMissile();
         }
 
         // 构造敌方元素   
@@ -155,6 +155,8 @@ int main()
         yk::GameContext::GetInstance()->EnemyAutoLanuchMissile();
 
         yk::GameContext::GetInstance()->DrawObjects();
+
+        yk::GameContext::GetInstance()->ExecuCheckCollision();
        
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
@@ -177,7 +179,7 @@ int main()
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
-void processInput(GLFWwindow* window, std::shared_ptr<yk::Plane> plane_ptr)
+void processInput(GLFWwindow* window)
 {
     uint8_t plane_direction_combination = static_cast<uint8_t>(yk::EDirection::kS);
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
@@ -203,7 +205,10 @@ void processInput(GLFWwindow* window, std::shared_ptr<yk::Plane> plane_ptr)
             g_last_launch_missile_time = current_time;
         }
     }
-    plane_ptr->SetDirection(plane_direction_combination);
+    auto first_plane = yk::GameContext::GetInstance()->GetFirstMainPlane();
+    if (first_plane) {
+        first_plane->SetDirection(plane_direction_combination);
+    }
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
