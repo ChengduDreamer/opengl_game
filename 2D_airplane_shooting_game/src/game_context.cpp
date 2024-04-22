@@ -1,12 +1,16 @@
 #include "game_context.h"
 #include <iostream>
 #include <random>
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
 #include <SFML/Audio.hpp>
 #include "object.h"
 #include "enemy_plane.h"
 #include "missile.h"
 #include "setting.h"
 #include "element_factory.h"
+#include "joystick.h"
+#include "common/time_util.h"
 namespace yk {
 	GameContext::GameContext() {
 		bk_music_player_ = std::make_shared<sf::Music>();
@@ -164,9 +168,13 @@ namespace yk {
 	}
 
 	void GameContext::OurPlaneLanuchMissile() {
+		if (!launch_missile_) { 
+			return; 
+		}
 		for (auto our_plane_iter = our_plane_objects_.begin(); our_plane_iter != our_plane_objects_.end(); ++our_plane_iter) {
 			(*our_plane_iter)->LaunchMissile();
 		}
+		launch_missile_ = false;
 	}
 
 	std::shared_ptr<MainPlane> GameContext::GetFirstMainPlane() {
@@ -182,5 +190,94 @@ namespace yk {
 			return our_plane_objects_[1];
 		}
 		return nullptr;
+	}
+
+// process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
+// ---------------------------------------------------------------------------------------------------------
+	void GameContext::ProcessInput(GLFWwindow* window) {
+		{
+			uint8_t plane_direction_combination = static_cast<uint8_t>(yk::EDirection::kS);
+			// keyboard control
+			if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+				glfwSetWindowShouldClose(window, true);
+			}
+			if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+				plane_direction_combination |= static_cast<uint8_t>(yk::EDirection::kU);
+			}
+			if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+				plane_direction_combination |= static_cast<uint8_t>(yk::EDirection::kD);
+			}
+			if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+				plane_direction_combination |= static_cast<uint8_t>(yk::EDirection::kL);
+			}
+			if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+				plane_direction_combination |= static_cast<uint8_t>(yk::EDirection::kR);
+			}
+			if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+				auto current_time = yk::GetCurrentTimestamp();
+				if (current_time - last_launch_missile_time_ > 60) {
+					launch_missile_ = true;
+					last_launch_missile_time_ = current_time;
+				}
+			}
+
+			//  joystick control
+			if (glfwJoystickPresent(GLFW_JOYSTICK_1) == GLFW_TRUE) {
+				const char* first_joystick_name = glfwGetJoystickName(GLFW_JOYSTICK_1);
+				printf("first_joystick_name = %s\n", first_joystick_name);
+				// 获取手柄的按钮状态
+				int count = 0;
+				const unsigned char* buttons = glfwGetJoystickButtons(GLFW_JOYSTICK_1, &count);
+				if (buttons != nullptr && count > 0)
+				{
+					for (size_t i = 0; i < count; ++i)
+					{
+						printf("i = %d ,", (int)i);
+						std::cout << std::hex << std::setw(2) << std::setfill('0')
+							<< static_cast<int>(buttons[i]) << ";";
+					}
+					std::cout << std::endl;
+
+					if (GLFW_PRESS == buttons[static_cast<int>(Joystick::EKey::kDirectionUp)]) {
+						plane_direction_combination |= static_cast<uint8_t>(yk::EDirection::kU);
+					}
+					if (GLFW_PRESS == buttons[static_cast<int>(Joystick::EKey::kkDirectionDown)]) {
+						plane_direction_combination |= static_cast<uint8_t>(yk::EDirection::kD);
+					}
+					if (GLFW_PRESS == buttons[static_cast<int>(Joystick::EKey::kDirectionLeft)]) {
+						plane_direction_combination |= static_cast<uint8_t>(yk::EDirection::kL);
+					}
+					if (GLFW_PRESS == buttons[static_cast<int>(Joystick::EKey::kDirectionRight)]) {
+						plane_direction_combination |= static_cast<uint8_t>(yk::EDirection::kR);
+					}
+					if (GLFW_PRESS == buttons[static_cast<int>(Joystick::EKey::kA)]) {
+						auto current_time = yk::GetCurrentTimestamp();
+						if (current_time - last_launch_missile_time_ > 60) {
+							launch_missile_ = true;
+							last_launch_missile_time_ = current_time;
+						}
+					}
+				}
+
+
+
+			}
+			if (glfwJoystickPresent(GLFW_JOYSTICK_2) == GLFW_TRUE) {
+				const char* second_joystick_name = glfwGetJoystickName(GLFW_JOYSTICK_2);
+				printf("second_joystick_name = %s\n", second_joystick_name);
+			}
+
+			
+
+
+
+
+
+
+			auto first_plane = yk::GameContext::GetInstance()->GetFirstMainPlane();
+			if (first_plane) {
+				first_plane->SetDirection(plane_direction_combination);
+			}
+		}
 	}
 }

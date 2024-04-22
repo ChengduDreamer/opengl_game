@@ -14,16 +14,10 @@
 #include "background.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void processInput(GLFWwindow* window);
 
 // settings
 const unsigned int SCR_WIDTH = 1200;
 const unsigned int SCR_HEIGHT = 800;
-
-std::vector<std::shared_ptr<yk::Object>> g_object_vector;
-
-bool g_launch_missile = false;
-uint64_t g_last_launch_missile_time = 0;
 
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
@@ -87,12 +81,7 @@ int main()
         std::shared_ptr<yk::MainPlane> plane_ptr = yk::ElementFactory::CreateMainPlane("image/hero_b_1.png", "shader/hero_b_1.vs", "shader/hero_b_1.fs", -1 * plane_width / 2, -1.0f + plane_height, plane_width, plane_height);
         yk::GameContext::GetInstance()->AddOurPlaneObject(plane_ptr);
     }
-    
-    
     //主控飞机2 to do
-
-
-
     // background
     std::shared_ptr<yk::Background> background_ptr = std::make_shared<yk::Background>("image/bg_512x768.jpg", "shader/hero_b_1.vs", "shader/hero_b_1.fs", -1.0f, 1.0f, 2.0f, 2.0f);
 
@@ -108,35 +97,7 @@ int main()
     while (!glfwWindowShouldClose(window))
     {
         uint64_t before_time = yk::GetCurrentTimestamp();
-        // input
-        // -----
-        processInput(window);
-
-
-        // 获取手柄的按钮状态
-        int count;
-        const unsigned char* buttons = glfwGetJoystickButtons(GLFW_JOYSTICK_1, &count);
-        if (buttons != nullptr && count > 0)
-        {
-            // 检查按钮 0 是否按下
-            if (buttons[0] == GLFW_PRESS)
-            {
-                std::cout << "按钮 0 被按下" << std::endl;
-
-                
-            }
-            //std::cout << "count = " << count << std::endl;
-            for (size_t i = 0; i < count; ++i)
-            {
-                std::cout << std::hex << std::setw(2) << std::setfill('0')
-                    << static_cast<int>(buttons[i]) << ' ';
-            }
-            std::cout << std::endl;
-        }
-
-
-
-
+        yk::GameContext::GetInstance()->ProcessInput(window);
         // render
         // ------
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -144,10 +105,7 @@ int main()
         
         background_ptr->Paint();
 
-        if (g_launch_missile) {
-            g_launch_missile = false;
-            yk::GameContext::GetInstance()->OurPlaneLanuchMissile();
-        }
+        yk::GameContext::GetInstance()->OurPlaneLanuchMissile();
 
         // 构造敌方元素   
         yk::GameContext::GetInstance()->GenerateEnemyPlaneObjects();
@@ -175,40 +133,6 @@ int main()
     glfwTerminate();
     yk::GameContext::GetInstance()->StopPlay();
     return 0;
-}
-
-// process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
-// ---------------------------------------------------------------------------------------------------------
-void processInput(GLFWwindow* window)
-{
-    uint8_t plane_direction_combination = static_cast<uint8_t>(yk::EDirection::kS);
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-        glfwSetWindowShouldClose(window, true);
-    }
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-        plane_direction_combination |= static_cast<uint8_t>(yk::EDirection::kU);
-    }
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-        plane_direction_combination |= static_cast<uint8_t>(yk::EDirection::kD);
-    }
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-        plane_direction_combination |= static_cast<uint8_t>(yk::EDirection::kL);
-    }
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-        plane_direction_combination |= static_cast<uint8_t>(yk::EDirection::kR);
-    }
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) { // 这里为什么摁空格键一次，反而会触发多次
-        std::cout << "launch a guided missile" << std::endl;
-        auto current_time = yk::GetCurrentTimestamp();
-        if (current_time - g_last_launch_missile_time > 60) {
-            g_launch_missile = true;
-            g_last_launch_missile_time = current_time;
-        }
-    }
-    auto first_plane = yk::GameContext::GetInstance()->GetFirstMainPlane();
-    if (first_plane) {
-        first_plane->SetDirection(plane_direction_combination);
-    }
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes

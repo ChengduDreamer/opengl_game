@@ -2,6 +2,8 @@
 #include <vector>
 #include <memory>
 
+struct GLFWwindow;
+
 namespace sf {
 	class Music;
 }
@@ -42,6 +44,8 @@ namespace yk {
 		std::shared_ptr<MainPlane> GetFirstMainPlane();
 		std::shared_ptr<MainPlane> GetSecondMainPlane();
 
+		void ProcessInput(GLFWwindow* window);
+
 		//因为有敌我双方，故这里用两个容器来存放 双方的 object
 		//enemy
 		std::vector<std::shared_ptr<EnemyPlane>> enemy_plane_objects_;
@@ -54,5 +58,9 @@ namespace yk {
 		GameContext();
 		
 		std::shared_ptr<sf::Music> bk_music_player_ = nullptr;
+
+		uint64_t last_launch_missile_time_ = 0;
+
+		bool launch_missile_ = false;
 	};
 }

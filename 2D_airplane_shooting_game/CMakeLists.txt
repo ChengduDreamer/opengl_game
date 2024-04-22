@@ -43,6 +43,7 @@ set(game_SOURCES
 	src/element/background.cpp
     src/main.cpp
 	src/setting.cpp
+	src/joystick.cpp
 	src/game_context.cpp
 	src/common/common.cpp
 	src/common/time_util.cpp
