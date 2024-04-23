@@ -79,6 +79,16 @@ int main()
         float plane_width = 0.1f;
         float plane_height = 0.12f;
         std::shared_ptr<yk::MainPlane> plane_ptr = yk::ElementFactory::CreateMainPlane("image/hero_b_1.png", "shader/hero_b_1.vs", "shader/hero_b_1.fs", -1 * plane_width / 2, -1.0f + plane_height, plane_width, plane_height);
+
+        plane_ptr->SetExplodeImages({
+            "image/explode/hero/explode01.png",
+            "image/explode/hero/explode02.png",
+            "image/explode/hero/explode03.png",
+            "image/explode/hero/explode04.png",
+            "image/explode/hero/explode05.png",
+            "image/explode/hero/explode06.png"
+        });
+
         yk::GameContext::GetInstance()->AddOurPlaneObject(plane_ptr);
     }
     //Ö÷¿Ø·É»ú2 to do

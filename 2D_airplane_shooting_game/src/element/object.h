@@ -84,5 +84,6 @@ namespace yk {
 
 		std::shared_ptr<Shader> sharder_program_ = nullptr;
 
+		bool explode_ = false;
 	};
 }

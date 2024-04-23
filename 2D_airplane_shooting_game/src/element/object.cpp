@@ -132,6 +132,9 @@ namespace yk {
     }
 
     void Object::Move(uint8_t direction_combination) {
+        if (explode_) { //发生爆炸了就不能动了
+            return;
+        }
         float x_offset = 0.0f;
         float y_offset = 0.0f;
         if (direction_combination & static_cast<uint8_t>(yk::EDirection::kU)) {

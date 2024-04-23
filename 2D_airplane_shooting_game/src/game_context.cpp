@@ -114,6 +114,14 @@ namespace yk {
 			float plane_height = 0.12f;
 			std::shared_ptr<yk::EnemyPlane> plane_ptr = yk::ElementFactory::CreateEnemyPlane("image/enemy.png", "shader/hero_b_1.vs", "shader/hero_b_1.fs", birth_pos.x, birth_pos.y, plane_width, plane_height);
 			plane_ptr->SetDirection(static_cast<uint8_t>(yk::EDirection::kD));
+
+			plane_ptr->SetExplodeImages({
+				"image/explode/enemy/explode01.png",
+				"image/explode/enemy/explode02.png",
+				"image/explode/enemy/explode03.png",
+				"image/explode/enemy/explode04.png"
+			});
+
 			yk::GameContext::GetInstance()->AddEnemyPlaneObject(plane_ptr);
 			birth_pos.x += (plane_width * (xr / 10));
 		}
@@ -152,19 +160,19 @@ namespace yk {
 		for (auto our_plane_iter = our_plane_objects_.begin(); our_plane_iter != our_plane_objects_.end(); ++our_plane_iter) {
 			for (auto enemy_plane_iter = enemy_plane_objects_.begin(); enemy_plane_iter != enemy_plane_objects_.end(); ++enemy_plane_iter) {
 				if (CheckCollision(*our_plane_iter, *enemy_plane_iter)) {
-					(*our_plane_iter)->destory_ = true;
-					(*enemy_plane_iter)->destory_ = true;
+					(*our_plane_iter)->explode_ = true;
+					(*enemy_plane_iter)->explode_ = true;
 				}
 			}
 		}
-		/*for (auto our_iter = our_objects_.begin(); our_iter != our_objects_.end(); ++our_iter) {
-			for (auto mi_iter = enemy_plane_objects_.begin(); enemy_plane_iter != enemy_plane_objects_.end(); ++enemy_plane_iter) {
-				if (CheckCollision(*our_iter, *enemy_plane_iter)) {
-					(*our_iter)->destory_ = true;
-					(*enemy_plane_iter)->destory_ = true;
+		for (auto our_missile_iter = our_missile_objects_.begin(); our_missile_iter != our_missile_objects_.end(); ++our_missile_iter) {
+			for (auto enemy_plane_iter = enemy_plane_objects_.begin(); enemy_plane_iter != enemy_plane_objects_.end(); ++enemy_plane_iter) {
+				if (CheckCollision(*our_missile_iter, *enemy_plane_iter)) {
+					(*our_missile_iter)->destory_ = true;
+					(*enemy_plane_iter)->explode_ = true;
 				}
 			}
-		}*/
+		}
 	}
 
 	void GameContext::OurPlaneLanuchMissile() {
@@ -255,6 +263,26 @@ namespace yk {
 						if (current_time - last_launch_missile_time_ > 60) {
 							launch_missile_ = true;
 							last_launch_missile_time_ = current_time;
+						}
+					}
+
+					if (GLFW_PRESS == buttons[static_cast<int>(Joystick::EKey::kY)]) {
+						auto first_plane = yk::GameContext::GetInstance()->GetFirstMainPlane();
+						if (!first_plane) {
+							float plane_width = 0.1f;
+							float plane_height = 0.12f;
+							std::shared_ptr<yk::MainPlane> plane_ptr = yk::ElementFactory::CreateMainPlane("image/hero_b_1.png", "shader/hero_b_1.vs", "shader/hero_b_1.fs", -1 * plane_width / 2, -1.0f + plane_height, plane_width, plane_height);
+							plane_ptr->SetExplodeImages({
+								"image/explode/hero/explode01.png",
+								"image/explode/hero/explode02.png",
+								"image/explode/hero/explode03.png",
+								"image/explode/hero/explode04.png",
+								"image/explode/hero/explode05.png",
+								"image/explode/hero/explode06.png"
+								});
+
+							yk::GameContext::GetInstance()->AddOurPlaneObject(plane_ptr);
+							
 						}
 					}
 				}
