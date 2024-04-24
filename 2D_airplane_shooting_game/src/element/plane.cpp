@@ -1,8 +1,10 @@
 #include "plane.h"
 #include <iostream>
 #include <filesystem>
+#include <mutex>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <SFML/Audio.hpp>
 #define STB_IMAGE_STATIC
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -14,6 +16,7 @@ namespace yk {
 	Plane::Plane(const std::string& img_relative_path, const std::string& vs_path, const std::string& fs_path, float x, float y, float width, float height) :
 	Object(img_relative_path, vs_path, fs_path, x, y, width, height) {
 		EElementType element_type_ = EElementType::kPlane;
+		explode_music_player_ = std::make_shared<sf::Music>();
 	}
 
 	void Plane::Paint() {
@@ -24,7 +27,7 @@ namespace yk {
 	}
 
 	Plane::~Plane() {
-	
+		explode_music_player_->stop();
 	}
 	void Plane::LaunchMissile() {
 		yk::Position plane_pos = this->GetCurrentHeadPosition();
@@ -52,6 +55,19 @@ namespace yk {
 	}
 
 	void Plane::Explode() {
+		static std::once_flag flag;
+		std::call_once(flag, [=]() {
+			auto bk_music_path = Setting::GetInstance()->GetExplodeMusicPath();
+			std::string bk_music_path_str = bk_music_path.string();
+			// ¼ÓÔØÒôÆµÎÄ¼þ
+			if (!explode_music_player_->openFromFile(bk_music_path_str)) {
+				std::cerr << "load explode music error" << std::endl;
+				return; // ¼ÓÔØÊ§°Ü
+			}
+			// ²¥·ÅÒôÀÖ
+			explode_music_player_->play();
+		});
+
 		auto current_time = yk::GetCurrentTimestamp();
 		if (current_time - last_update_explode_image_time_ < explod_interval) {
 			return;

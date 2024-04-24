@@ -3,6 +3,10 @@
 #include <string>
 #include "object.h"
 
+namespace sf {
+	class Music;
+}
+
 namespace yk {
 	class Plane : public Object {
 	public:
@@ -19,5 +23,7 @@ namespace yk {
 		float explod_duration = 1500; // ms
 		float explod_interval = 10;
 		uint64_t last_update_explode_image_time_ = 0;
+
+		std::shared_ptr<sf::Music> explode_music_player_ = nullptr;
 	};
 }

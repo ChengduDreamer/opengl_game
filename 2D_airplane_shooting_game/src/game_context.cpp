@@ -159,6 +159,9 @@ namespace yk {
 	void GameContext::ExecuCheckCollision() {
 		for (auto our_plane_iter = our_plane_objects_.begin(); our_plane_iter != our_plane_objects_.end(); ++our_plane_iter) {
 			for (auto enemy_plane_iter = enemy_plane_objects_.begin(); enemy_plane_iter != enemy_plane_objects_.end(); ++enemy_plane_iter) {
+				if ((*our_plane_iter)->explode_ || (*enemy_plane_iter)->explode_) {
+					continue;
+				}
 				if (CheckCollision(*our_plane_iter, *enemy_plane_iter)) {
 					(*our_plane_iter)->explode_ = true;
 					(*enemy_plane_iter)->explode_ = true;
@@ -170,6 +173,14 @@ namespace yk {
 				if (CheckCollision(*our_missile_iter, *enemy_plane_iter)) {
 					(*our_missile_iter)->destory_ = true;
 					(*enemy_plane_iter)->explode_ = true;
+				}
+			}
+		}
+		for (auto our_plane_iter = our_plane_objects_.begin(); our_plane_iter != our_plane_objects_.end(); ++our_plane_iter) {
+			for (auto enemy_missile_iter = enemy_missile_objects_.begin(); enemy_missile_iter != enemy_missile_objects_.end(); ++enemy_missile_iter) {
+				if (CheckCollision(*our_plane_iter, *enemy_missile_iter)) {
+					(*our_plane_iter)->explode_ = true;
+					(*enemy_missile_iter)->destory_ = true;
 				}
 			}
 		}
