@@ -20,10 +20,11 @@ namespace yk {
 	private:
 		std::vector<std::string> explode_images_;
 		int current_explode_index_ = 0;
-		float explod_duration = 1500; // ms
+		float explod_duration = 1200; // ms
 		float explod_interval = 10;
 		uint64_t last_update_explode_image_time_ = 0;
 
 		std::shared_ptr<sf::Music> explode_music_player_ = nullptr;
+		bool played_explode_ = false;
 	};
 }

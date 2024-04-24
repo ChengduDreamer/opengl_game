@@ -55,8 +55,7 @@ namespace yk {
 	}
 
 	void Plane::Explode() {
-		static std::once_flag flag;
-		std::call_once(flag, [=]() {
+		if (!played_explode_) {
 			auto bk_music_path = Setting::GetInstance()->GetExplodeMusicPath();
 			std::string bk_music_path_str = bk_music_path.string();
 			// ¼ÓÔØÒôÆµÎÄ¼ş
@@ -66,8 +65,9 @@ namespace yk {
 			}
 			// ²¥·ÅÒôÀÖ
 			explode_music_player_->play();
-		});
-
+			//std::cout << "explode_music_player_->play()" << std::endl;
+			played_explode_ = true;
+		}
 		auto current_time = yk::GetCurrentTimestamp();
 		if (current_time - last_update_explode_image_time_ < explod_interval) {
 			return;
@@ -107,7 +107,6 @@ namespace yk {
 			std::cout << "Failed to load texture" << std::endl;
 		}
 		stbi_image_free(data);
-		
 		++current_explode_index_;
 	}
 }

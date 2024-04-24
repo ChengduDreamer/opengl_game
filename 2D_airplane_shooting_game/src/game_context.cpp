@@ -80,7 +80,9 @@ namespace yk {
 
 	void GameContext::EnemyAutoLanuchMissile() {
 		for (auto& plane : enemy_plane_objects_) {
-			plane->JudgeLanuchMissile();
+			if (!plane->explode_) {
+				plane->JudgeLanuchMissile();
+			}
 		}
 	}
 
@@ -243,12 +245,13 @@ namespace yk {
 			//  joystick control
 			if (glfwJoystickPresent(GLFW_JOYSTICK_1) == GLFW_TRUE) {
 				const char* first_joystick_name = glfwGetJoystickName(GLFW_JOYSTICK_1);
-				printf("first_joystick_name = %s\n", first_joystick_name);
+				//printf("first_joystick_name = %s\n", first_joystick_name);
 				// 获取手柄的按钮状态
 				int count = 0;
 				const unsigned char* buttons = glfwGetJoystickButtons(GLFW_JOYSTICK_1, &count);
 				if (buttons != nullptr && count > 0)
 				{
+#if 0
 					for (size_t i = 0; i < count; ++i)
 					{
 						printf("i = %d ,", (int)i);
@@ -256,7 +259,7 @@ namespace yk {
 							<< static_cast<int>(buttons[i]) << ";";
 					}
 					std::cout << std::endl;
-
+#endif
 					if (GLFW_PRESS == buttons[static_cast<int>(Joystick::EKey::kDirectionUp)]) {
 						plane_direction_combination |= static_cast<uint8_t>(yk::EDirection::kU);
 					}

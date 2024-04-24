@@ -12,7 +12,7 @@ namespace yk {
 		}
 		std::filesystem::path GetBackgroundMusicPath();
 		std::filesystem::path GetExplodeMusicPath();
-		int max_enemy_plane_count_ = 4;
+		int max_enemy_plane_count_ = 2;
 		int fps_ = 60;
 		std::filesystem::path resource_base_path_ = "";
 
