@@ -16,7 +16,12 @@ namespace yk {
 	public:
 		Background(const std::string& img_relative_path, const std::string& vs_path, const std::string& fs_path, float x, float y, float width, float height);
 		virtual ~Background();
-		void Init();
+		// top right
+		// bottom right
+		// bottom left
+		// top left 
+		bool first = false;
+		void Init(Position top_right, Position bottom_right, Position bottom_left, Position top_left);
 		virtual void Paint();
 
 		std::string img_relative_path_ = "";
@@ -37,5 +42,9 @@ namespace yk {
 
 		std::shared_ptr<Shader> sharder_program_ = nullptr;
 
+		float x_ = 0.0f;
+		float y_ = 0.0f;
+
+		void Move(float x_offset, float y_offset);
 	};
 }

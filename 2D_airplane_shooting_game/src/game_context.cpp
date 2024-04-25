@@ -193,6 +193,9 @@ namespace yk {
 			return; 
 		}
 		for (auto our_plane_iter = our_plane_objects_.begin(); our_plane_iter != our_plane_objects_.end(); ++our_plane_iter) {
+			if ((*our_plane_iter)->explode_) {
+				continue;
+			}
 			(*our_plane_iter)->LaunchMissile();
 		}
 		launch_missile_ = false;

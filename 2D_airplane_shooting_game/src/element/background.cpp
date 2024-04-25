@@ -18,7 +18,8 @@ namespace yk {
         shader_vs_path_ = (Setting::GetInstance()->resource_base_path_ / vs_path).string();
         shader_fs_path_ = (Setting::GetInstance()->resource_base_path_ / fs_path).string();
         sharder_program_ = std::make_shared<Shader>(shader_vs_path_.c_str(), shader_fs_path_.c_str());
-        Init();
+        x_ = x;
+        y_ = y;
     }
 
     Background::~Background()
@@ -29,7 +30,8 @@ namespace yk {
         glDeleteTextures(1, &texture0_); //如果不删除, 会导致内存泄露
     }
 
-    void Background::Init() {
+    void Background::Init(Position top_right, Position bottom_right, Position bottom_left, Position top_left) {
+#if 0
         float vertices[] = {
             // positions             // texture coords
             1.00f,  1.00f,   0.0f,   1.0f, 1.0f, // top right
@@ -37,10 +39,21 @@ namespace yk {
            -1.00f, -1.00f,   0.0f,   0.0f, 0.0f, // bottom left
            -1.00f,  1.00f,   0.0f,   0.0f, 1.0f  // top left 
         };
+#endif
+        float vertices[] = {
+            // positions                      // texture coords
+            top_right.x,    top_right.y,      0.0f,   1.0f, 1.0f, // top right
+            bottom_right.x, bottom_right.y,   0.0f,   1.0f, 0.0f, // bottom right
+            bottom_left.x,  bottom_left.y,    0.0f,   0.0f, 0.0f, // bottom left
+            top_left.x,     top_left.y,       0.0f,   0.0f, 1.0f  // top left 
+        };
+
         unsigned int indices[] = {
             0, 1, 3, // first triangle
             1, 2, 3  // second triangle
         };
+
+        glm::vec3 position = glm::vec3(0.0f, y_ -1.0f, 0.0f);
 
         glGenVertexArrays(1, &VAO_);
         glGenBuffers(1, &VBO_);
@@ -101,11 +114,40 @@ namespace yk {
         // either set it manually like so:
         glUniform1i(glGetUniformLocation(sharder_program_->ID, "texture0"), 0);
         translation_matrix_ = glm::mat4(1.0f);
+        translation_matrix_ = glm::translate(translation_matrix_, position);
         unsigned int model_loc = glGetUniformLocation(sharder_program_->ID, "model");
         glUniformMatrix4fv(model_loc, 1, GL_FALSE, glm::value_ptr(translation_matrix_));
     }
 
     void Background::Paint() {
+        
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                std::cout << translation_matrix_[i][j] << " ";
+            }
+            std::cout << std::endl;
+        }
+
+        glm::vec3 object_position = glm::vec3(translation_matrix_ * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));  // 实际上 translation_matrix_ 应该表示的是偏移量
+
+        object_position.y = object_position.y + 1.0f;                                                    // 所以这里应该在加上 1.0f
+
+        std::cout << "(((((((((((((((((((((((((((((((((((((((" << std::endl;
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                std::cout << translation_matrix_[i][j] << " ";
+            }
+            std::cout << std::endl;
+        }
+        std::cout << "))))))))))))))))))))))))))))))))))))))" << std::endl;
+        /*std::cout << "object_position y = " << object_position.y << std::endl;*/
+        if (object_position.y <= -1.0f) {
+            Move(0.0f, 3.99f);
+        }
+        else {
+            Move(0.0f, -0.01f);
+        }
+
         // bind textures on corresponding texture units
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture0_);
@@ -116,5 +158,17 @@ namespace yk {
     }
 
    
-   
+    void Background::Move(float x_offset, float y_offset) {
+        glm::vec3 offset = glm::vec3(x_offset, y_offset, 0.0f);
+        GLfloat position[4] = { 0.0f, };
+        sharder_program_->use();
+        translation_matrix_ = glm::translate(translation_matrix_, offset);
+
+       /* glm::vec3 object_position = glm::vec3(translation_matrix_ * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+
+        std::cout << "object_position y = " << object_position.y << std::endl;*/
+
+        unsigned int model_loc = glGetUniformLocation(sharder_program_->ID, "model");
+        glUniformMatrix4fv(model_loc, 1, GL_FALSE, glm::value_ptr(translation_matrix_));
+    }
 }

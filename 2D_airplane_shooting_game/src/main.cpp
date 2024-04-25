@@ -96,6 +96,14 @@ int main()
     // background
     std::shared_ptr<yk::Background> background_ptr = std::make_shared<yk::Background>("image/bg_512x768.jpg", "shader/hero_b_1.vs", "shader/hero_b_1.fs", -1.0f, 1.0f, 2.0f, 2.0f);
 
+    background_ptr->Init({1.0f, 1.0f}, {1.0, -1.0f}, {-1.0f, -1.0f}, {-1.0f, 1.0f});
+
+    background_ptr->first = true;
+
+    std::shared_ptr<yk::Background> background_ptr2 = std::make_shared<yk::Background>("image/bg_512x768.jpg", "shader/hero_b_1.vs", "shader/hero_b_1.fs", -1.0f, 3.0f, 2.0f, 2.0f);
+
+    background_ptr2->Init({ 1.0f, 1.0f }, { 1.0, -1.0f }, { -1.0f, -1.0f }, { -1.0f, 1.0f });
+
     // 设置键盘回调函数
     glfwSetKeyCallback(window, keyCallback);
 
@@ -115,6 +123,8 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT);
         
         background_ptr->Paint();
+
+        background_ptr2->Paint();
 
         yk::GameContext::GetInstance()->OurPlaneLanuchMissile();
 
