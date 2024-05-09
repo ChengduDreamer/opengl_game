@@ -189,16 +189,20 @@ namespace yk {
 	}
 
 	void GameContext::OurPlaneLanuchMissile() {
-		if (!launch_missile_) { 
+		if (!first_plane_launch_missile_ && !second_plane_launch_missile_) { 
 			return; 
 		}
-		for (auto our_plane_iter = our_plane_objects_.begin(); our_plane_iter != our_plane_objects_.end(); ++our_plane_iter) {
-			if ((*our_plane_iter)->explode_) {
-				continue;
-			}
-			(*our_plane_iter)->LaunchMissile();
+		auto first_plane = GetFirstMainPlane();
+		if (first_plane && first_plane_launch_missile_ && !first_plane->explode_) {
+			first_plane->LaunchMissile();
+			first_plane_launch_missile_ = false;
 		}
-		launch_missile_ = false;
+
+		auto second_plane = GetSecondMainPlane();
+		if (second_plane && second_plane_launch_missile_ && !second_plane->explode_) {
+			second_plane->LaunchMissile();
+			second_plane_launch_missile_ = false;
+		}
 	}
 
 	std::shared_ptr<MainPlane> GameContext::GetFirstMainPlane() {
@@ -220,28 +224,50 @@ namespace yk {
 // ---------------------------------------------------------------------------------------------------------
 	void GameContext::ProcessInput(GLFWwindow* window) {
 		{
-			uint8_t plane_direction_combination = static_cast<uint8_t>(yk::EDirection::kS);
+			uint8_t first_plane_direction_combination = static_cast<uint8_t>(yk::EDirection::kS);
+
+			uint8_t second_plane_direction_combination = static_cast<uint8_t>(yk::EDirection::kS);
+
 			// keyboard control
 			if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 				glfwSetWindowShouldClose(window, true);
 			}
 			if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-				plane_direction_combination |= static_cast<uint8_t>(yk::EDirection::kU);
+				first_plane_direction_combination |= static_cast<uint8_t>(yk::EDirection::kU);
 			}
 			if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-				plane_direction_combination |= static_cast<uint8_t>(yk::EDirection::kD);
+				first_plane_direction_combination |= static_cast<uint8_t>(yk::EDirection::kD);
 			}
 			if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-				plane_direction_combination |= static_cast<uint8_t>(yk::EDirection::kL);
+				first_plane_direction_combination |= static_cast<uint8_t>(yk::EDirection::kL);
 			}
 			if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-				plane_direction_combination |= static_cast<uint8_t>(yk::EDirection::kR);
+				first_plane_direction_combination |= static_cast<uint8_t>(yk::EDirection::kR);
 			}
 			if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
 				auto current_time = yk::GetCurrentTimestamp();
-				if (current_time - last_launch_missile_time_ > 60) {
-					launch_missile_ = true;
-					last_launch_missile_time_ = current_time;
+				if (current_time - first_plane_last_launch_missile_time_ > 60) {
+					first_plane_launch_missile_ = true;
+					first_plane_last_launch_missile_time_ = current_time;
+				}
+			}
+
+			if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {
+				auto first_plane = yk::GameContext::GetInstance()->GetFirstMainPlane();
+				if (!first_plane) {
+					float plane_width = 0.1f;
+					float plane_height = 0.12f;
+					std::shared_ptr<yk::MainPlane> plane_ptr = yk::ElementFactory::CreateMainPlane("image/hero_b_1.png", "shader/hero_b_1.vs", "shader/hero_b_1.fs", -1 * plane_width / 2 - plane_width * 3, -1.0f + plane_height, plane_width, plane_height);
+					plane_ptr->SetExplodeImages({
+						"image/explode/hero/explode01.png",
+						"image/explode/hero/explode02.png",
+						"image/explode/hero/explode03.png",
+						"image/explode/hero/explode04.png",
+						"image/explode/hero/explode05.png",
+						"image/explode/hero/explode06.png"
+						});
+
+					yk::GameContext::GetInstance()->AddOurPlaneObject(plane_ptr);
 				}
 			}
 
@@ -264,22 +290,22 @@ namespace yk {
 					std::cout << std::endl;
 #endif
 					if (GLFW_PRESS == buttons[static_cast<int>(Joystick::EKey::kDirectionUp)]) {
-						plane_direction_combination |= static_cast<uint8_t>(yk::EDirection::kU);
+						first_plane_direction_combination |= static_cast<uint8_t>(yk::EDirection::kU);
 					}
 					if (GLFW_PRESS == buttons[static_cast<int>(Joystick::EKey::kkDirectionDown)]) {
-						plane_direction_combination |= static_cast<uint8_t>(yk::EDirection::kD);
+						first_plane_direction_combination |= static_cast<uint8_t>(yk::EDirection::kD);
 					}
 					if (GLFW_PRESS == buttons[static_cast<int>(Joystick::EKey::kDirectionLeft)]) {
-						plane_direction_combination |= static_cast<uint8_t>(yk::EDirection::kL);
+						first_plane_direction_combination |= static_cast<uint8_t>(yk::EDirection::kL);
 					}
 					if (GLFW_PRESS == buttons[static_cast<int>(Joystick::EKey::kDirectionRight)]) {
-						plane_direction_combination |= static_cast<uint8_t>(yk::EDirection::kR);
+						first_plane_direction_combination |= static_cast<uint8_t>(yk::EDirection::kR);
 					}
 					if (GLFW_PRESS == buttons[static_cast<int>(Joystick::EKey::kA)]) {
 						auto current_time = yk::GetCurrentTimestamp();
-						if (current_time - last_launch_missile_time_ > 60) {
-							launch_missile_ = true;
-							last_launch_missile_time_ = current_time;
+						if (current_time - first_plane_last_launch_missile_time_ > 60) {
+							first_plane_launch_missile_ = true;
+							first_plane_last_launch_missile_time_ = current_time;
 						}
 					}
 
@@ -288,7 +314,7 @@ namespace yk {
 						if (!first_plane) {
 							float plane_width = 0.1f;
 							float plane_height = 0.12f;
-							std::shared_ptr<yk::MainPlane> plane_ptr = yk::ElementFactory::CreateMainPlane("image/hero_b_1.png", "shader/hero_b_1.vs", "shader/hero_b_1.fs", -1 * plane_width / 2, -1.0f + plane_height, plane_width, plane_height);
+							std::shared_ptr<yk::MainPlane> plane_ptr = yk::ElementFactory::CreateMainPlane("image/hero_b_1.png", "shader/hero_b_1.vs", "shader/hero_b_1.fs", -1 * plane_width / 2 - plane_width * 3, -1.0f + plane_height, plane_width, plane_height);
 							plane_ptr->SetExplodeImages({
 								"image/explode/hero/explode01.png",
 								"image/explode/hero/explode02.png",
@@ -303,25 +329,102 @@ namespace yk {
 						}
 					}
 				}
-
-
-
 			}
+
+			// keyboard control
+			if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+				second_plane_direction_combination |= static_cast<uint8_t>(yk::EDirection::kU);
+			}
+			if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+				second_plane_direction_combination |= static_cast<uint8_t>(yk::EDirection::kD);
+			}
+			if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
+				second_plane_direction_combination |= static_cast<uint8_t>(yk::EDirection::kL);
+			}
+			if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
+				second_plane_direction_combination |= static_cast<uint8_t>(yk::EDirection::kR);
+			}
+			if (glfwGetKey(window, GLFW_KEY_KP_0) == GLFW_PRESS) {
+				auto current_time = yk::GetCurrentTimestamp();
+				if (current_time - second_plane_last_launch_missile_time_ > 60) {
+					second_plane_launch_missile_ = true;
+					second_plane_last_launch_missile_time_ = current_time;
+				}
+			}
+
+			if (glfwGetKey(window, GLFW_KEY_KP_9) == GLFW_PRESS) {
+				auto second_plane = yk::GameContext::GetInstance()->GetSecondMainPlane();
+				if (!second_plane) {
+					float plane_width = 0.1f;
+					float plane_height = 0.12f;
+					std::shared_ptr<yk::MainPlane> plane_ptr = yk::ElementFactory::CreateMainPlane("image/hero_b_2.png", "shader/hero_b_1.vs", "shader/hero_b_1.fs", -1 * plane_width / 2 + plane_width * 3, -1.0f + plane_height, plane_width, plane_height);
+					plane_ptr->SetExplodeImages({
+						"image/explode/hero/explode01.png",
+						"image/explode/hero/explode02.png",
+						"image/explode/hero/explode03.png",
+						"image/explode/hero/explode04.png",
+						"image/explode/hero/explode05.png",
+						"image/explode/hero/explode06.png"
+						});
+					yk::GameContext::GetInstance()->AddOurPlaneObject(plane_ptr);
+				}
+			}
+
 			if (glfwJoystickPresent(GLFW_JOYSTICK_2) == GLFW_TRUE) {
 				const char* second_joystick_name = glfwGetJoystickName(GLFW_JOYSTICK_2);
 				printf("second_joystick_name = %s\n", second_joystick_name);
+				// 获取手柄的按钮状态
+				int count = 0;
+				const unsigned char* buttons = glfwGetJoystickButtons(GLFW_JOYSTICK_2, &count);
+				if (buttons != nullptr && count > 0)
+				{
+					if (GLFW_PRESS == buttons[static_cast<int>(Joystick::EKey::kDirectionUp)]) {
+						second_plane_direction_combination |= static_cast<uint8_t>(yk::EDirection::kU);
+					}
+					if (GLFW_PRESS == buttons[static_cast<int>(Joystick::EKey::kkDirectionDown)]) {
+						second_plane_direction_combination |= static_cast<uint8_t>(yk::EDirection::kD);
+					}
+					if (GLFW_PRESS == buttons[static_cast<int>(Joystick::EKey::kDirectionLeft)]) {
+						second_plane_direction_combination |= static_cast<uint8_t>(yk::EDirection::kL);
+					}
+					if (GLFW_PRESS == buttons[static_cast<int>(Joystick::EKey::kDirectionRight)]) {
+						second_plane_direction_combination |= static_cast<uint8_t>(yk::EDirection::kR);
+					}
+					if (GLFW_PRESS == buttons[static_cast<int>(Joystick::EKey::kA)]) {
+						auto current_time = yk::GetCurrentTimestamp();
+						if (current_time - second_plane_last_launch_missile_time_ > 60) {
+							second_plane_launch_missile_ = true;
+							second_plane_last_launch_missile_time_ = current_time;
+						}
+					}
+					if (GLFW_PRESS == buttons[static_cast<int>(Joystick::EKey::kY)]) {
+						auto second_plane = yk::GameContext::GetInstance()->GetSecondMainPlane();
+						if (!second_plane) {
+							float plane_width = 0.1f;
+							float plane_height = 0.12f;
+							std::shared_ptr<yk::MainPlane> plane_ptr = yk::ElementFactory::CreateMainPlane("image/hero_b_2.png", "shader/hero_b_1.vs", "shader/hero_b_1.fs", -1 * plane_width / 2 + plane_width * 3, -1.0f + plane_height, plane_width, plane_height);
+							plane_ptr->SetExplodeImages({
+								"image/explode/hero/explode01.png",
+								"image/explode/hero/explode02.png",
+								"image/explode/hero/explode03.png",
+								"image/explode/hero/explode04.png",
+								"image/explode/hero/explode05.png",
+								"image/explode/hero/explode06.png"
+								});
+							yk::GameContext::GetInstance()->AddOurPlaneObject(plane_ptr);
+						}
+					}
+				}
 			}
-
-			
-
-
-
-
-
 
 			auto first_plane = yk::GameContext::GetInstance()->GetFirstMainPlane();
 			if (first_plane) {
-				first_plane->SetDirection(plane_direction_combination);
+				first_plane->SetDirection(first_plane_direction_combination);
+			}
+
+			auto second_plane = yk::GameContext::GetInstance()->GetSecondMainPlane();
+			if (second_plane) {
+				second_plane->SetDirection(second_plane_direction_combination);
 			}
 		}
 	}

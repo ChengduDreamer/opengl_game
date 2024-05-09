@@ -79,7 +79,7 @@ int main()
     {
         float plane_width = 0.1f;
         float plane_height = 0.12f;
-        std::shared_ptr<yk::MainPlane> plane_ptr = yk::ElementFactory::CreateMainPlane("image/hero_b_1.png", "shader/hero_b_1.vs", "shader/hero_b_1.fs", -1 * plane_width / 2, -1.0f + plane_height, plane_width, plane_height);
+        std::shared_ptr<yk::MainPlane> plane_ptr = yk::ElementFactory::CreateMainPlane("image/hero_b_1.png", "shader/hero_b_1.vs", "shader/hero_b_1.fs", -1 * plane_width / 2 - plane_width * 3, -1.0f + plane_height, plane_width, plane_height);
 
         plane_ptr->SetExplodeImages({
             "image/explode/hero/explode01.png",
@@ -93,6 +93,23 @@ int main()
         yk::GameContext::GetInstance()->AddOurPlaneObject(plane_ptr);
     }
     //Ö÷¿Ø·É»ú2 to do
+    {
+        float plane_width = 0.1f;
+        float plane_height = 0.12f;
+        std::shared_ptr<yk::MainPlane> plane_ptr = yk::ElementFactory::CreateMainPlane("image/hero_b_2.png", "shader/hero_b_1.vs", "shader/hero_b_1.fs", -1 * plane_width / 2 + plane_width * 3, -1.0f + plane_height, plane_width, plane_height);
+
+        plane_ptr->SetExplodeImages({
+            "image/explode/hero/explode01.png",
+            "image/explode/hero/explode02.png",
+            "image/explode/hero/explode03.png",
+            "image/explode/hero/explode04.png",
+            "image/explode/hero/explode05.png",
+            "image/explode/hero/explode06.png"
+            });
+
+        yk::GameContext::GetInstance()->AddOurPlaneObject(plane_ptr);
+    }
+
     // background
     std::shared_ptr<yk::Background> background_ptr = std::make_shared<yk::Background>("image/bg_512x768.jpg", "shader/hero_b_1.vs", "shader/hero_b_1.fs", -1.0f, 1.0f, 2.0f, 2.0f);
 

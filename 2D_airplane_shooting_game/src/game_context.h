@@ -59,8 +59,12 @@ namespace yk {
 		
 		std::shared_ptr<sf::Music> bk_music_player_ = nullptr;
 
-		uint64_t last_launch_missile_time_ = 0;
+		uint64_t first_plane_last_launch_missile_time_ = 0;
 
-		bool launch_missile_ = false;
+		uint64_t second_plane_last_launch_missile_time_ = 0;
+
+		bool first_plane_launch_missile_ = false;
+
+		bool second_plane_launch_missile_ = false;
 	};
 }
