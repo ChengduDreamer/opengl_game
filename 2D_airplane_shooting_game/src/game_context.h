@@ -25,7 +25,9 @@ namespace yk {
 
 		void AddEnemyPlaneObject(const std::shared_ptr<EnemyPlane>& obj);
 		void AddEnemyMissileObject(const std::shared_ptr<Missile>& obj);
-		void AddOurPlaneObject(const std::shared_ptr<MainPlane>& obj);
+		void AddOurFirstPlaneObject(const std::shared_ptr<MainPlane>& obj);
+		void AddOurSecondPlaneObject(const std::shared_ptr<MainPlane>& obj);
+
 		void AddOurMissileObject(const std::shared_ptr<Missile>& obj);
 		void DrawObjects();
 		void EnemyAutoLanuchMissile();
@@ -52,8 +54,11 @@ namespace yk {
 		std::vector<std::shared_ptr<Missile>> enemy_missile_objects_;
 
 		//our
-		std::vector<std::shared_ptr<MainPlane>> our_plane_objects_;
 		std::vector<std::shared_ptr<Missile>> our_missile_objects_;
+
+		std::shared_ptr<MainPlane> first_plane_objects_;
+
+		std::shared_ptr<MainPlane> second_plane_objects_;
 	private:
 		GameContext();
 		

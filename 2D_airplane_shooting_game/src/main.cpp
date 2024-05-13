@@ -90,7 +90,7 @@ int main()
             "image/explode/hero/explode06.png"
         });
 
-        yk::GameContext::GetInstance()->AddOurPlaneObject(plane_ptr);
+        yk::GameContext::GetInstance()->AddOurFirstPlaneObject(plane_ptr);
     }
     //Ö÷¿Ø·É»ú2 to do
     {
@@ -107,7 +107,7 @@ int main()
             "image/explode/hero/explode06.png"
             });
 
-        yk::GameContext::GetInstance()->AddOurPlaneObject(plane_ptr);
+        yk::GameContext::GetInstance()->AddOurSecondPlaneObject(plane_ptr);
     }
 
     // background

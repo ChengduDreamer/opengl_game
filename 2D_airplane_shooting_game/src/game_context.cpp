@@ -30,8 +30,12 @@ namespace yk {
 		//std::cout << "AddEnemyObjected size = "<< enemy_objects_.size() << std::endl;
 	}
 
-	void GameContext::AddOurPlaneObject(const std::shared_ptr<MainPlane>& obj) {
-		our_plane_objects_.emplace_back(obj);
+	void GameContext::AddOurFirstPlaneObject(const std::shared_ptr<MainPlane>& obj) {
+		first_plane_objects_ = obj;
+	}
+
+	void GameContext::AddOurSecondPlaneObject(const std::shared_ptr<MainPlane>& obj) {
+		second_plane_objects_ = obj;
 	}
 
 	void GameContext::AddOurMissileObject(const std::shared_ptr<Missile>& obj) {
@@ -39,16 +43,24 @@ namespace yk {
 	}
 
 	void GameContext::DrawObjects() {
-		//std::cout << "our_objects_ size = " << our_objects_.size() << std::endl;
-		for (auto iter = our_plane_objects_.begin(); iter != our_plane_objects_.end(); ) {
-			if ((*iter)->destory_) {
-				iter = our_plane_objects_.erase(iter);
+		if (first_plane_objects_) {
+			if (first_plane_objects_->destory_) {
+				first_plane_objects_ = nullptr;
 			}
 			else {
-				(*iter)->Paint();
-				++iter;
+				first_plane_objects_->Paint();
 			}
 		}
+
+		if (second_plane_objects_) {
+			if (second_plane_objects_->destory_) {
+				second_plane_objects_ = nullptr;
+			}
+			else {
+				second_plane_objects_->Paint();
+			}
+		}
+
 		for (auto iter = our_missile_objects_.begin(); iter != our_missile_objects_.end(); ) {
 			if ((*iter)->destory_) {
 				iter = our_missile_objects_.erase(iter);
@@ -159,30 +171,49 @@ namespace yk {
 	}
 
 	void GameContext::ExecuCheckCollision() {
-		for (auto our_plane_iter = our_plane_objects_.begin(); our_plane_iter != our_plane_objects_.end(); ++our_plane_iter) {
+		if(first_plane_objects_) {
 			for (auto enemy_plane_iter = enemy_plane_objects_.begin(); enemy_plane_iter != enemy_plane_objects_.end(); ++enemy_plane_iter) {
-				if ((*our_plane_iter)->explode_ || (*enemy_plane_iter)->explode_) {
+				if (first_plane_objects_->explode_ || (*enemy_plane_iter)->explode_) {
 					continue;
 				}
-				if (CheckCollision(*our_plane_iter, *enemy_plane_iter)) {
-					(*our_plane_iter)->explode_ = true;
+				if (CheckCollision(first_plane_objects_, *enemy_plane_iter)) {
+					first_plane_objects_->explode_ = true;
 					(*enemy_plane_iter)->explode_ = true;
 				}
 			}
+
+			for (auto enemy_missile_iter = enemy_missile_objects_.begin(); enemy_missile_iter != enemy_missile_objects_.end(); ++enemy_missile_iter) {
+				if (CheckCollision(first_plane_objects_, *enemy_missile_iter)) {
+					first_plane_objects_->explode_ = true;
+					(*enemy_missile_iter)->destory_ = true;
+				}
+			}
 		}
+
+		if (second_plane_objects_) {
+			for (auto enemy_plane_iter = enemy_plane_objects_.begin(); enemy_plane_iter != enemy_plane_objects_.end(); ++enemy_plane_iter) {
+				if (second_plane_objects_->explode_ || (*enemy_plane_iter)->explode_) {
+					continue;
+				}
+				if (CheckCollision(second_plane_objects_, *enemy_plane_iter)) {
+					second_plane_objects_->explode_ = true;
+					(*enemy_plane_iter)->explode_ = true;
+				}
+			}
+
+			for (auto enemy_missile_iter = enemy_missile_objects_.begin(); enemy_missile_iter != enemy_missile_objects_.end(); ++enemy_missile_iter) {
+				if (CheckCollision(second_plane_objects_, *enemy_missile_iter)) {
+					second_plane_objects_->explode_ = true;
+					(*enemy_missile_iter)->destory_ = true;
+				}
+			}
+		}
+
 		for (auto our_missile_iter = our_missile_objects_.begin(); our_missile_iter != our_missile_objects_.end(); ++our_missile_iter) {
 			for (auto enemy_plane_iter = enemy_plane_objects_.begin(); enemy_plane_iter != enemy_plane_objects_.end(); ++enemy_plane_iter) {
 				if (CheckCollision(*our_missile_iter, *enemy_plane_iter)) {
 					(*our_missile_iter)->destory_ = true;
 					(*enemy_plane_iter)->explode_ = true;
-				}
-			}
-		}
-		for (auto our_plane_iter = our_plane_objects_.begin(); our_plane_iter != our_plane_objects_.end(); ++our_plane_iter) {
-			for (auto enemy_missile_iter = enemy_missile_objects_.begin(); enemy_missile_iter != enemy_missile_objects_.end(); ++enemy_missile_iter) {
-				if (CheckCollision(*our_plane_iter, *enemy_missile_iter)) {
-					(*our_plane_iter)->explode_ = true;
-					(*enemy_missile_iter)->destory_ = true;
 				}
 			}
 		}
@@ -206,18 +237,12 @@ namespace yk {
 	}
 
 	std::shared_ptr<MainPlane> GameContext::GetFirstMainPlane() {
-		if (our_plane_objects_.size() > 0) {
-			return our_plane_objects_[0];
-		}
-		return nullptr;
+		return first_plane_objects_;
 	}
 
 
 	std::shared_ptr<MainPlane> GameContext::GetSecondMainPlane() {
-		if (our_plane_objects_.size() > 1) {
-			return our_plane_objects_[1];
-		}
-		return nullptr;
+		return second_plane_objects_;
 	}
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
@@ -267,7 +292,7 @@ namespace yk {
 						"image/explode/hero/explode06.png"
 						});
 
-					yk::GameContext::GetInstance()->AddOurPlaneObject(plane_ptr);
+					yk::GameContext::GetInstance()->AddOurFirstPlaneObject(plane_ptr);
 				}
 			}
 
@@ -324,7 +349,7 @@ namespace yk {
 								"image/explode/hero/explode06.png"
 								});
 
-							yk::GameContext::GetInstance()->AddOurPlaneObject(plane_ptr);
+							yk::GameContext::GetInstance()->AddOurFirstPlaneObject(plane_ptr);
 							
 						}
 					}
@@ -366,7 +391,7 @@ namespace yk {
 						"image/explode/hero/explode05.png",
 						"image/explode/hero/explode06.png"
 						});
-					yk::GameContext::GetInstance()->AddOurPlaneObject(plane_ptr);
+					yk::GameContext::GetInstance()->AddOurSecondPlaneObject(plane_ptr);
 				}
 			}
 
@@ -411,7 +436,7 @@ namespace yk {
 								"image/explode/hero/explode05.png",
 								"image/explode/hero/explode06.png"
 								});
-							yk::GameContext::GetInstance()->AddOurPlaneObject(plane_ptr);
+							yk::GameContext::GetInstance()->AddOurSecondPlaneObject(plane_ptr);
 						}
 					}
 				}
