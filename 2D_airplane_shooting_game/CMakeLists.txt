@@ -50,15 +50,9 @@ set(game_SOURCES
 )
 
 
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-	add_executable(${PROJECT_NAME} 
-		${game_SOURCES}
-	)
-else()
-	add_executable(${PROJECT_NAME} WIN32
-		${game_SOURCES}
-	)
-endif()
+add_executable(${PROJECT_NAME} 
+	${game_SOURCES}
+)
 
 # target_link_libraries(${PROJECT_NAME}  glfw3 opengl32 sfml-audio sfml-system sfml-network sfml-graphics sfml-window)
 
