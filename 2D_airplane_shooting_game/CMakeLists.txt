@@ -48,9 +48,18 @@ set(game_SOURCES
 	src/common/common.cpp
 	src/common/time_util.cpp
 )
-add_executable(${PROJECT_NAME}
+
+
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+	add_executable(${PROJECT_NAME} 
 		${game_SOURCES}
-)
+	)
+else()
+	add_executable(${PROJECT_NAME} WIN32
+		${game_SOURCES}
+	)
+endif()
+
 # target_link_libraries(${PROJECT_NAME}  glfw3 opengl32 sfml-audio sfml-system sfml-network sfml-graphics sfml-window)
 
 target_link_libraries(${PROJECT_NAME}  glfw3 opengl32 sfml-audio)

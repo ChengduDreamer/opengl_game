@@ -92,7 +92,7 @@ int main()
 
         yk::GameContext::GetInstance()->AddOurFirstPlaneObject(plane_ptr);
     }
-    //主控飞机2 to do
+    //主控飞机2 
     {
         float plane_width = 0.1f;
         float plane_height = 0.12f;
